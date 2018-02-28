@@ -57,4 +57,4 @@ One of ways the performance of the system can be ascertained is by the way we ap
 Further, we plan to ease process of administration and accounting of resources (VMs and other Network devices) by generating logs that contain the state information of the each and every resource in the network. Our product also intends to make the network administrator aware of problems by logging faults that occur in the network such as in the event of a VM crash and allowing appropriate action to be taken.
 
 # Conclusion
-The document gives description about selected existing solutions offered in the industry and we delve into the architecture that we propose for our product, we then outline some features that we intend to offer in our solution. Finally we’ve given a tentative timeline that has been estimated for each milestone.
+The document delves into the architecture that we propose for our product, we then outline some features that we intend to offer in our solution. 
