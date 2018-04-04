@@ -1,7 +1,6 @@
 # Deliverable 2 Description
-```diff
- ***Deadline: 9th April 2018***
-```
+![](https://github.com/kmedidi/HypeTunnel/blob/master/images/Deadline.PNG)
+
 # Overall Requirements 
 Static configuration for multipoint to multipoint L2 VXLAN tunnels between Tenants' VMs spread across multiple Hypervisors separated across an underlay network (preferrably Internet). All proposed features must be supported
 
