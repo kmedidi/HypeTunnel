@@ -2,7 +2,7 @@
 ![](https://github.com/kmedidi/HypeTunnel/blob/master/images/Deadline.PNG)
 
 # Overall Requirements 
-Static configuration for multipoint to multipoint L2 VXLAN tunnels between Tenants' VMs spread across multiple Hypervisors separated across an underlay network (preferrably Internet). All proposed features must be supported
+Static configuration for multipoint to multipoint L2 VXLAN & L3 GRE tunnels between Tenants' VMs spread across multiple Hypervisors separated across an underlay network (preferrably Internet). All proposed features must be supported
 
 # Detailed Requirements
 1. Script 1 - Goal: Create a Tenant's VPC on a Hypervisor (Will be run on different hypervisors to establish the infrastructure for this project).
