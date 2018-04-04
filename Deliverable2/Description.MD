@@ -1,6 +1,6 @@
 # Deliverable 2 Description
 ```diff
-- ***Deadline: 9th April 2018***
+ ***Deadline: 9th April 2018***
 ```
 # Overall Requirements 
 Static configuration for multipoint to multipoint L2 VXLAN tunnels between Tenants' VMs spread across multiple Hypervisors separated across an underlay network (preferrably Internet). All proposed features must be supported
