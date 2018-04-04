@@ -7,11 +7,11 @@ Static configuration for multipoint to multipoint L2 VXLAN & L3 GRE tunnels betw
 # Detailed Requirements
 1. Script 1 - Goal: Create a Tenant's VPC on a Hypervisor (Will be run on different hypervisors to establish the infrastructure for this project).
 
-2. Script 2 -  Goal: Based on the input from the Service Provider (Infrastructure owner), CREATE, DELETE & UPDATE a L3 tunnel between the resource locations
+2. Script 2 -  Goal: Based on the input from the Service Provider (Infrastructure owner), CREATE, DELETE & UPDATE a L3 tunnel between the resource locations Public Gateway (PGW) to PGW
 
-3. Script 3 - Goal: Based on Tenant requirement CREATE, DELETE & UPDATE L2 VXLAN tunnels
+3. Script 3 - Goal: Based on Tenant requirement CREATE, DELETE & UPDATE L2 VXLAN tunnels (Switch to Switch)
 
-4. Script 4 - Goal: Based on Tenant requirement CREATE, DELETE & UPDATE L3 GRE tunnels
+4. Script 4 - Goal: Based on Tenant requirement CREATE, DELETE & UPDATE L3 GRE tunnels {Internal Gateway (IGW) to IGW}
 
 5. Script 5 -  Goal: Based on trigger from Service Provider/ Tenant about VM migration, proactively update F.T of all VTEPs.
 
