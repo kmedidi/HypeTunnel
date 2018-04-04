@@ -1,7 +1,7 @@
 # Deliverable 2 Description
-
-# Deadline: 9th April 2018
-
+```diff
++ # Deadline: 9th April 2018
+```
 # Overall Requirements 
 Static configuration for multipoint to multipoint L2 VXLAN tunnels between Tenants' VMs spread across multiple Hypervisors separated across an underlay network (preferrably Internet). All proposed features must be supported
 
@@ -21,9 +21,4 @@ Static configuration for multipoint to multipoint L2 VXLAN tunnels between Tenan
 7. Extra Goal: Currently we will be utilizing the multicast based dynamic address learning at VTEPs. However, a simple goal at Script 2 is to proactively populate VTEP F.T. since all the information is available in one form or the other to our HypeTunnel software.
 
 # Future Scope
-Automation
-
-```diff
-+ this will be highlighted in green
-- this will be highlighted in red
-```
+Automation of the solution
