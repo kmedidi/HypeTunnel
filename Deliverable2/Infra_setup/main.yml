@@ -1,0 +1,7 @@
+---
+- name: Configuring Infrastructure
+  hosts: localhost
+  gather_facts: no
+  become: yes
+  roles:
+    - switch_infra
