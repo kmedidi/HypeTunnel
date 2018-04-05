@@ -25,11 +25,6 @@
     bridge: sw3
     state: present
 
-- name: Create an OvS bridge sw4
-  openvswitch_bridge:
-    bridge: sw4
-    state: present
-
 - name: Define network internet
   virt_net:  
     command: define
@@ -47,12 +42,6 @@
     command: define
     name: L3
     xml: '{{ lookup("template", "l3.j2") }}'
-
-- name: Define network other
-  virt_net:  
-    command: define
-    name: Other
-    xml: '{{ lookup("template", "other.j2") }}'
 
 - name: Starting network internet
   virt_net:
@@ -72,20 +61,11 @@
       name: L3
       autostart: yes
 
-- name: Starting network other
-  virt_net:
-      command: start
-      name: Other
-      autostart: yes
-
 - name: Configuring L3 interfaces - SW1
   shell: ip addr add 192.168.140.1/24 dev sw1
 
 - name: Configuring L3 interfaces - SW3
   shell: ip addr add 192.168.141.1/24 dev sw3
-
-- name: Configuring L3 interfaces - SW4
-  shell: ip addr add 192.168.142.1/24 dev sw4
 
 - name: Starting SW1
   shell: ip link set sw1 up
@@ -95,9 +75,6 @@
 
 - name: Starting SW3
   shell: ip link set sw3 up
-
-- name: Starting SW4
-  shell: ip link set sw4 up
 
 - name: Configuring NAT on SW1
   shell: iptables -t nat -A POSTROUTING -o sw1 -j MASQUERADE
