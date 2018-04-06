@@ -16,11 +16,9 @@ Static configuration for multipoint to multipoint L2 VXLAN & L3 GRE tunnels betw
 
 4. Script 4 - Goal: Based on Tenant requirement CREATE, DELETE & UPDATE L3 GRE tunnels {Internal Gateway (IGW) to IGW}
 
-5. Script 5 -  Goal: Based on trigger from Service Provider/ Tenant about VM migration, proactively update F.T of all VTEPs.
+5. Script 5 - Goal: Controller to call Scripts 1, 2, 3, 4 for VM mobility and Migration to cloud.
 
-6. Script 6: Goal: Based on input from Service Provider call Scripts 2, 3, 4 & 5 to support migration to cloud.
-
-7. Extra Goal: Currently we will be utilizing the multicast based dynamic address learning at VTEPs. However, a simple goal at Script 2 is to proactively populate VTEP F.T. since all the information is available in one form or the other to our HypeTunnel software.
+6. Extra Goal: Currently we will be utilizing the multicast based dynamic address learning at VTEPs. However, a simple goal at Script 2 is to proactively populate VTEP F.T. since all the information is available in one form or the other to our HypeTunnel software.
 
 # Future Scope
 Automation of the solution
