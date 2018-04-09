@@ -1,0 +1,64 @@
+---
+# tasks file for infra-book
+- name: Configuration setting
+  hosts: all
+  become: yes
+  tasks:
+    - name: Checking for default paackages
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - qemu-kvm
+        - qemu
+        - libvirt-bin
+        - virt-manager
+        - virt-viewer
+        - virtinst
+        - openvswitch-switch
+
+    - name: Creating conf directory HypeTunnel directory locally
+      file: path="/home/vm1/HypeTunnel/conf" state=directory
+      hosts: localhost
+
+    - name: Creating HypeTunnel databaase file
+      copy: 
+        content: ""
+        dest: "{{ playbook_dir }}/HypeTunnel/HypeTunnel_database.txt"
+        force: no
+        hosts: host1
+        owner: root
+        mode: 0555 
+
+    - name: Creating an OVS bridge central_ovs
+      openvswitch_bridge:
+        bridge: central_ovs
+        state: present
+
+    - name: Create conf and  directory
+      file: path="/home/vm1/HypeTunnel" state=directory
+
+    - name: Create empty file for flows.txt
+      copy:
+        content: ""
+        dest: "/home/vm1/HypeTunnel/flows.txt"
+        force: no
+        host: all
+        owner: vm1
+        mode: 0555
+
+    - debug: 
+        msg: "{{ group['all'] }}"
+
+    - debug: 
+        msg: "{{item}}"
+        loop: "{{group['all']}}"
+        when: "{{ item }} != {{ host_vars[inventory_hostname].ansible_host_ipv4.address}}"
+
+    # - name: Creating VXLAN & GRE interface on central_ovs 
+    #   shell: ovs-vsctl add-port central_ovs vxlan1 -- set interface vxlan1 type=vxlan options:local_ip={{ host_vars[inventory_hostname].ansible_host_ipv4.address}} options:remote_ip={{ item }}
+    #   loop: "{{ group['all'] }}"
+    #   when: "{{ item }} != {{ host_vars[inventory_hostname].ansible_host_ipv4.address}}"
+
+    # - name: Creating GRE interface on central_ovs
+    #   shell: ovs-vsctl add-port central_ovs gre1 set interface gre1 type=gre options:remote_ip=192.168.124.151
