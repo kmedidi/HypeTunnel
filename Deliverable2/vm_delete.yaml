@@ -1,0 +1,43 @@
+- hosts: localhost
+  gather_facts: no
+  become: yes
+
+  tasks:
+#    - name: Getting interface details
+#      debug:
+#        msg: "{{ hostvars[inventory_hostname]['ansible_%s' | format(item)] }}"
+#      with_items: "{{ ansible_interfaces }}"
+
+
+#      debug: msg=ansible_{{ item }}
+#      with_items: "{{ ansible_default_ipv4[macaddress] }}"
+
+    - name: Checking state of VM
+      virt:
+        name: "{{ domain_name }}"
+        command: status
+        uri: 'qemu:///system'
+      register: vmstatus
+
+    - name: Shutting down the VM
+      virt:
+        name: "{{ domain_name }}"
+        command: destroy
+        uri: 'qemu:///system'
+      when: vmstatus.status == 'running'
+
+    - name: Deleting the VM
+      shell: virsh undefine {{ domain_name }} --remove-all-storage
+
+    - name: Removing connection to bridge
+      shell: ip link delete vethT{{ TID }}_{{ domain_name }}_a
+
+ #   - name: Updating the Flow file
+
+ #   - name: Deleting current flows in OVS
+
+ #   - name: Pushing new updated flows to OVS
+
+ #   - name: Updating the Database
+
+ #   - name: Writing to log file
