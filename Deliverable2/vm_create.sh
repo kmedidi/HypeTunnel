@@ -4,6 +4,7 @@ VMNAME=$2
 NEWIP=$3
 TUNNELID=$4
 SELF_HYP_IP=$5
+KEY_NAME=${HOME}/.ssh/mark1
 
 # Take current time
 current_time=$(date)
@@ -52,10 +53,10 @@ echo "ip addr add $NEWIP dev ens9" >> $HOME/temp_exec.sh
 echo "ip route add default dev ens9" >> $HOME/temp_exec.sh 
 
 # SCP the executable
-scp -i $HOME/.ssh/mark1 $HOME/temp_exec.sh root@$IP://root/temp_exec.sh
+scp -o StrictHostKeyChecking=no -i ${KEY_NAME} $HOME/temp_exec.sh root@$IP://root/temp_exec.sh
 
 # SSH and assign the IP address to the VM using executable
-ssh -oStrictHostKeyChecking=no root@$IP -i $HOME/.ssh/mark1 <<-'ENDSSH'
+ssh -o StrictHostKeyChecking=no root@$IP -i ${KEY_NAME} <<-'ENDSSH'
 	sh /root/temp_exec.sh
 ENDSSH
 echo "$current_time : Static IP $NEWIP configured for VM: $VMNAME."
@@ -80,8 +81,8 @@ do
 	if ! [[ $i -lt 5 ]]; then
 		echo "table=1,tun_id=$TUNNELID,arp,nw_dst=$NEWIP,actions=output:10" >> $HOME/temp_other_hyp.txt
 		echo "table=1,tun_id=$TUNNELID,dl_dst=$NEWMAC,actions=output:10" >> $HOME/temp_other_hyp.txt 
-		scp -i $HOME/.ssh/mark1 $HOME/temp_other_hyp.txt vm1@$IP://home/vm1/temp_other_hyp.txt
-		ssh -oStrictHostKeyChecking=no vm1@$var -i $HOME/.ssh/mark1 <<-'ENDSSH'
+		scp -o StrictHostKeyChecking=no -i ${KEY_NAME} $HOME/temp_other_hyp.txt vm1@$IP://home/vm1/temp_other_hyp.txt
+		ssh -o StrictHostKeyChecking=no vm1@$var -i ${KEY_NAME} <<-'ENDSSH'
 			sed -i '$ d' /home/vm1/HypeTunnel/conf/flows.txt
 			cat /home/vm1/temp_other_hyp.txt >> /home/vm1/HypeTunnel/conf/flows.txt
 			echo "table=1,priority=100,actions=drop" >> /home/vm1/HypeTunnel/conf/flows.txt
@@ -98,3 +99,4 @@ done
 
 # Push new VM details into database
 echo "HYP_IP:$SELF_HYP_IP,Tenant:$TENANTID,VM_NAME:$VMNAME,VM_IP:$NEWIP,VM_MAC:$NEWMAC" >> $HOME/HypeTunnel/conf/database.txt
+rm $HOME/temp_exec.sh
