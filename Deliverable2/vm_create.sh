@@ -1,4 +1,4 @@
-#!/bin/bash
+
 TENANTID=$1
 VMNAME=$2
 NEWIP=$3
@@ -10,6 +10,7 @@ KEY_NAME=${HOME}/.ssh/mark1
 current_time=$(date)
 echo "$current_time : Creating VM .."
 echo "$current_time : Creating VM .." >> $HOME/HypeTunnel/logs/logs.txt
+
 
 # Create VM
 virt-clone -n $VMNAME --original base --auto-clone
