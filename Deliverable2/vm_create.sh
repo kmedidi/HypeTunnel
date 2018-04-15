@@ -1,4 +1,4 @@
-
+#!/bin/bash
 TENANTID=$1
 VMNAME=$2
 NEWIP=$3
