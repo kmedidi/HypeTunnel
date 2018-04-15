@@ -1,5 +1,6 @@
-- hosts: localhost
+- hosts: HYP2
   gather_facts: no
+#  remote_user: root
   become: yes
 
   tasks:
@@ -12,12 +13,27 @@
 #      debug: msg=ansible_{{ item }}
 #      with_items: "{{ ansible_default_ipv4[macaddress] }}"
 
+#    - name: Getting MAC of VM
+#      shell: virsh dumpxml {{ domain_name }} | grep "mac address" | grep -oE "([0-9a-f][0-9a-f]:){5}[0-9a-f][0-9a-f]"
+#      register: mac_addr
+
+
+    - name: Checking the presence of VM
+      stat:
+        path: /etc/libvirt/qemu/{{ domain_name }}.xml
+      register: st
+
+    - debug:
+        msg: "VM Does not Exist! Kindly specify the correct VM"
+      when: st.stat.exists == False
+
     - name: Checking state of VM
       virt:
         name: "{{ domain_name }}"
         command: status
         uri: 'qemu:///system'
       register: vmstatus
+      when: st.stat.exists == True
 
     - name: Shutting down the VM
       virt:
@@ -30,14 +46,47 @@
       shell: virsh undefine {{ domain_name }} --remove-all-storage
 
     - name: Removing connection to bridge
-      shell: ip link delete vethT{{ TID }}_{{ domain_name }}_a
+      shell: ip link delete veth_{{ domain_name }}_a
 
- #   - name: Updating the Flow file
+    - name: Getting PWD in remote host
+      shell: pwd
+      register: dir
 
- #   - name: Deleting current flows in OVS
+    - name: Updating the Flows
+      replace:
+        destfile: "{{ dir.stdout }}/HypeTunnel/flows.txt"
+        regexp: '^table=1,tun_id={{ TID }},(.*={{ mac_addr }}|arp,.*={{ vm_ip }}).*$'
+        replace: ''
+        backup: yes
 
- #   - name: Pushing new updated flows to OVS
+    - name: Deleting current flows in OVS
+      shell: ovs-ofctl del-flows central_ovs
 
- #   - name: Updating the Database
+    - name: Pushing new updated flows to OVS
+      shell: ovs-ofctl add-flows central_ovs {{ dir.stdout }}/HypeTunnel/flows.txt
 
- #   - name: Writing to log file
+
+################ LOGGING TASKS ###################
+
+    - name: Get Current Time
+      shell: date
+      register: cur_timestamp
+
+
+- hosts: localhost
+  tasks:
+    - name: Getting PWD in central host
+      shell: pwd
+      register: curDir
+
+    - name: Updating the Database
+      lineinfile:
+        destfile: "{{ curDir.stdout }}/HypeTunnel/conf/database.txt"
+        state: absent
+        regexp: '^HYP_IP:192.168.124.151.*Tenant:{{ TID }}.*VM_IP:{{ vm_ip }}$'
+
+    - name: Writing to log file
+      copy:
+        content: "{{ cur_timestamp.stdout }}: Deleted VM {{ domain_name }} of Tenant {{ TID }} on "
+        dest: "{{ curDir.stdout }}/HypeTunnel/conf/logs.txt"
+
