@@ -4,7 +4,7 @@ VMNAME=$2
 NEWIP=$3
 TUNNELID=$4
 SELF_HYP_IP=$5
-KEY_NAME=${HOME}/.ssh/mark1
+KEY_NAME=${HOME}/.ssh/proj_key
 
 # Take current time
 current_time=$(date)
