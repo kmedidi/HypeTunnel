@@ -17,10 +17,10 @@ Highly automated system that implements tunneling solution for multi-tenants' VP
 4. Script 4 - master_controller - Python/Ansible script that provides the UI and controls and calls all the subordinate scripts according to the user input.
 
 # FILE STRUCTURE
-$HOME/HypeTunnel/Scripts - Has all the scripts on remote server only
-$HOME/HypeTunnel/Logs - Has logs.txt on remote server only
-$HOME/HypeTunnel/Conf - Has flows.txt --> Present on all hypervisors
-$HOME/HypeTunnel/Conf - Has database.txt on remote server only
+1. $HOME/HypeTunnel/Scripts - Has all the scripts on remote server only
+2. $HOME/HypeTunnel/Logs - Has logs.txt on remote server only
+3. $HOME/HypeTunnel/Conf - Has flows.txt --> Present on all hypervisors
+4. $HOME/HypeTunnel/Conf - Has database.txt on remote server only
 
 # CONCLUSION
 Centralized logging & Configuration Management using Ansible with timestamps incorporates FCAPS model. 
