@@ -5,7 +5,7 @@
 Highly automated system that implements tunneling solution for multi-tenants' VPCs. A Virtual Private Cloud (VPC) of a tenant allows the tenant full freedom on choosing the topology in a virtual world and satisfies the requirements such as connection to the internet, interconnection to certain other tenants and so on. 
 
 # FINAL ARCHITECTURE
-![](https://github.com/kmedidi/HypeTunnel/blob/master/images/FinalArchfINAL.PNG)
+![](https://github.com/kmedidi/HypeTunnel/blob/master/images/FinalArchfINAL.png)
 
 # REQUIREMENTS
 1. Script 1 - provider_infra.yml - Constructs the above static provider infrastructure of the OVS switches, tunnels and PGW namespaces across all hypervisors.
