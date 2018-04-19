@@ -1,4 +1,4 @@
-# Deliverable 2 Description
+# Final Deliverable Description
 ![](https://github.com/kmedidi/HypeTunnel/blob/master/images/FinalDeadline.PNG)
 
 # IDEA
@@ -15,6 +15,12 @@ Highly automated system that implements tunneling solution for multi-tenants' VP
 3. Script 3 - tenant_vms.yml - Creates/ Deletes a container for a tenant based on the input from a central JSON file and updates the flows in the OVS switches {Handles VM mobility and Cloud migration}.
 
 4. Script 4 - master_controller - Python/Ansible script that provides the UI and controls and calls all the subordinate scripts according to the user input.
+
+# FILE STRUCTURE
+$HOME/HypeTunnel/Scripts - Has all the scripts on remote server only
+$HOME/HypeTunnel/Logs - Has logs.txt on remote server only
+$HOME/HypeTunnel/Conf - Has flows.txt --> Present on all hypervisors
+$HOME/HypeTunnel/Conf - Has database.txt on remote server only
 
 # CONCLUSION
 Centralized logging & Configuration Management using Ansible with timestamps incorporates FCAPS model. 
