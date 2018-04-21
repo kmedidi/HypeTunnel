@@ -36,4 +36,5 @@ do
       ovs-vsctl add-port central_ovs gre_$gre_int_name -- set interface gre1 ofport_request=$gre_int type=gre options:remote_ip=$var
     fi
   fi
+  i=$(($i+1))
 done

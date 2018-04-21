@@ -1,9 +1,55 @@
 import os
 
 #*********************************************************************************************************************************************************
+#
+# Source: https://gist.github.com/mattyjones/10666342
+#
+
+def ssh_command (user, host, password, command):
+    """This runs a command on the remote host."""
+
+    print " I am logging into", host
+
+    ssh_newkey = 'Are you sure you want to continue connecting'
+    child = pexpect.spawn('ssh -l %s %s %s'%(user, host, command))
+    i = child.expect([pexpect.TIMEOUT, ssh_newkey, 'password: '])
+    if i == 0: # Timeout
+        print('ERROR!')
+        print('SSH could not login. Here is what SSH said:')
+        print(child.before, child.after)
+        return None
+    if i == 1: # SSH does not have the public key. Just accept it.
+        child.sendline ('yes')
+        child.expect ('password: ')
+        i = child.expect([pexpect.TIMEOUT, 'password: '])
+        if i == 0: # Timeout
+            print('9ERROR!')
+            print('SSH could not login. Here is what SSH said:')
+            print(child.before, child.after)
+            return None
+    child.sendline(password)
+    return child
+
+#*********************************************************************************************************************************************************
 
 def infra():
     '''Function that calls infra.sh to created basic infra'''
+    hyplistfile = "hyplistfile.txt"
+    with open(hyplistfile, mode = 'rb') as f:
+        hypervisors = f.read().split('\n');
+        hypMatrix = [{"ip":hypervisors[x].split("*")[0],"uname":hypervisors[x].split("*")[1], "pwd":hypervisors[x].split("*")[2]} for x in range(hypervisors)]
+        i = 0
+    for hypervisor in hypervisors:
+        # Send the shell script to the remote hypervisor
+        remote_ip_list = ""
+        for hyp in hypervisors:
+            if hyp != hypervisor:
+                remote_ip_list += str(hyp)
+        run_command = "$HOME/HypeTunnel/Conf/infra.sh " + hypMatrix[i]['ip'] + " " + remote_ip_list
+        child = ssh_command(hypMatrix[i]['uname'],hypMatrix[i]['ip'],hypMatrix[i]['pwd'],run_command)
+        child.expect(pexpect.EOF)
+        #output = child.before
+
     success = True
     return success
 
