@@ -34,7 +34,7 @@ my_ip=$1
 i=1
 for var in "$@"
 do
-  if ! [[ $i -lt 2 ]]; then
+  if ! [[ $i -lt 1 ]]; then
     i_present = sudo ovs-vsctl show | grep -c $i
     if [[ $i_present -gt 0 ]];then
       vxlan_int_name = $i
