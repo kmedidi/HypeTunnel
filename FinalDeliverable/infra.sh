@@ -1,3 +1,4 @@
+#!/bin/bash
 #Create directories $HOME/HypeTunnel, $HOME/HypeTunnel/conf, $HOME/HypeTunnel/logs
 sudo mkdir -p -- $HOME/HypeTunnel/conf
 sudo mkdir -p -- $HOME/HypeTunnel/logs
@@ -7,19 +8,24 @@ sudo touch -a $HOME/HypeTunnel/conf/flows.txt
 sudo touch -a $HOME/HypeTunnel/logs/logs.txt
 
 # Create central_ovs if absent
-c_present = sudo ovs-vsctl show | grep -c central_ovs
-if [[ $c_present -gt 0 ]] then
+cpresent=$(sudo ovs-vsctl show | grep -cw central_ovs)
+if ! [[ $cpresent -gt 0 ]]
+then
   sudo ovs-vsctl add-br central_ovs
 fi
 
 # Create tunnel_ovs if absent
-t_present = sudo ovs-vsctl show | grep -c tunnel_ovs
-if [[ $t_present -gt 0 ]] then
+tpresent=$(sudo ovs-vsctl show | grep -cw tunnel_ovs)
+if ! [[ $tpresent -gt 0 ]]
+then
   sudo ovs-vsctl add-br tunnel_ovs
 fi
 
 # Connect tunnel_ovs with central_ovs
-if [[ $c_present -gt 0 && $t_present -gt 0]]; then
+t0present=$(sudo ovs-vsctl show | grep -cw tunn0)
+t1present=$(sudo ovs-vsctl show | grep -cw tunn1)
+if ! [[ $t0present -gt 0 && $t1present -gt 0 ]]
+then
   sudo ip link add tunn0 type veth peer name tunn1
   sudo ip link set tunn0 up
   sudo ip link set tunn1 up
@@ -34,15 +40,17 @@ my_ip=$1
 i=1
 for var in "$@"
 do
-  if ! [[ $i -lt 1 ]]; then
-    i_present = sudo ovs-vsctl show | grep -c $i
-    if [[ $i_present -gt 0 ]];then
-      vxlan_int_name = $i
-      gre_int_name = $i + 1
-      vxlan_int = $i + 10
-      gre_int = $i + 11
-      ovs-vsctl add-port tunnel_ovs vxlan_$vxlan_int_name -- set interface vxlan_$i ofport_request=$vxlan_int type=vxlan options:local_ip=$my_ip options:remote_ip=$var
-      ovs-vsctl add-port tunnel_ovs gre_$gre_int_name -- set interface gre1 ofport_request=$gre_int type=gre options:remote_ip=$var
+  if ! [[ $i -lt 2 ]]
+  then
+    ipresent=$(sudo ovs-vsctl show | grep -cw $var)
+    if ! [[ $ipresent -gt 0 ]]
+    then
+      vxlan_int_name=$i
+      gre_int_name=$i
+      vxlan_int=$(($i+10))
+      gre_int=$(($i+11))
+      ovs-vsctl add-port tunnel_ovs vxlan_$vxlan_int_name -- set Interface vxlan_$i ofport_request=$vxlan_int type=vxlan options:local_ip=$my_ip options:remote_ip=$var
+      ovs-vsctl add-port tunnel_ovs gre_$gre_int_name -- set Interface gre_$i ofport_request=$gre_int type=gre options:remote_ip=$var
     fi
   fi
   i=$(($i+1))
