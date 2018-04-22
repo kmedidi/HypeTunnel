@@ -1,4 +1,5 @@
 import os
+import filecmp
 
 #*********************************************************************************************************************************************************
 #
@@ -7,8 +8,6 @@ import os
 
 def ssh_command (user, host, password, command):
     """This runs a command on the remote host."""
-
-    print " I am logging into", host
 
     ssh_newkey = 'Are you sure you want to continue connecting'
     child = pexpect.spawn('ssh -l %s %s %s'%(user, host, command))
@@ -32,25 +31,32 @@ def ssh_command (user, host, password, command):
 
 #*********************************************************************************************************************************************************
 
-def infra():
+def infra(hypervisors):
     '''Function that calls infra.sh to created basic infra'''
-    hyplistfile = "hyplistfile.txt"
-    with open(hyplistfile, mode = 'rb') as f:
-        hypervisors = f.read().split('\n');
-        hypMatrix = [{"ip":hypervisors[x].split("*")[0],"uname":hypervisors[x].split("*")[1], "pwd":hypervisors[x].split("*")[2]} for x in range(hypervisors)]
-        i = 0
+    hypMatrix = [{"ip":hypervisors[x].split("*")[0],"uname":hypervisors[x].split("*")[1], "pwd":hypervisors[x].split("*")[2]} for x in range(hypervisors)]
+
+    ver_commands = []
+    ver_commands.append("sudo ovs-vsctl show | grep -c central_ovs")
+    ver_commands.append("sudo ovs-vsctl show | grep -c tunnel_ovs")
+    ver_commands.append("sudo ovs-vsctl show | grep -c central_ovs")
+    i = 0
+    success = True
     for hypervisor in hypervisors:
         # Send the shell script to the remote hypervisor
         remote_ip_list = ""
         for hyp in hypervisors:
             if hyp != hypervisor:
-                remote_ip_list += str(hyp)
-        run_command = "$HOME/HypeTunnel/Conf/infra.sh " + hypMatrix[i]['ip'] + " " + remote_ip_list
+                remote_ip_list += str(hyp)+" "
+        run_command = "bash $HOME/HypeTunnel/Conf/infra.sh " + hypMatrix[i]['ip'] + " " + remote_ip_list
         child = ssh_command(hypMatrix[i]['uname'],hypMatrix[i]['ip'],hypMatrix[i]['pwd'],run_command)
         child.expect(pexpect.EOF)
         #output = child.before
-
-    success = True
+        for ver_command in ver_commands:
+            child = ssh_command(hypMatrix[i]['uname'],hypMatrix[i]['ip'],hypMatrix[i]['pwd'],ver_command[])
+            child.expect(pexpect.EOF)
+            output = child.before
+            if int(output) < 0:
+                success = False
     return success
 
 #*********************************************************************************************************************************************************
@@ -62,15 +68,25 @@ def tenant_infra():
 
 #*********************************************************************************************************************************************************
 
-def tenant_addvms(tenant):
-    '''Function that calls add_vms.sh to create VMs in a specific subnet for a tenant'''
+def tenant_addsubnet(subnet, tenant, hypervisors):
+    '''Function to a subnet for a tenant in all hypervisors'''
     success = True
     return success
 
 #*********************************************************************************************************************************************************
 
-def tenant_delvms(tenant):
-    '''Function that calls del_vms.sh to delete VMs of a specific IP address for a tenant'''
+def tenant_addvm(vm_name, vm_ip, tenant, hypervisor, uname, pwd):
+    '''Function that calls add_vm.sh to create VMs in a specific subnet for a tenant on a hypervisor'''
+    run_command = "sudo bash $HOME/HypeTunnel/Conf/add_vm.sh "+vm_name+" "+vm_ip
+    child = ssh_command(uname, hypervisor, pwd, run_command)
+    child.expect(pexpect.EOF)
+    vm_mac = child.before
+    return vm_mac
+
+#*********************************************************************************************************************************************************
+
+def tenant_delvm(vm_name, tenant, hypervisor):
+    '''Function that calls del_vms.sh to delete VMs of a specific vm_name for a tenant on a hypervisor'''
     success = True
     return success
 
@@ -86,6 +102,8 @@ def download_tenant_logs():
 
 #*********************************************************************************************************************************************************
 
+hyplistfile = "hyplistfile.txt"
+databasefile = "databasefile.txt"
 user_input = "1"
 while int(user_input) != 3:
     print "H Y P E R V I S O R  O V E R L A Y  N E T W O R K  --  h y p e T u n n e l"
@@ -102,18 +120,73 @@ while int(user_input) != 3:
             print "1. Database info"
             print "2. Create HypeTunnel infrastructure"
             print "3. Add/Remove a tenant"
-            print "4. Add compute resources for a tenant"
-            print "5. Remove compute resources for a tenant"
+            print "4. Add compute resource on a new or existing subnet for a tenant"
+            print "5. Remove compute resources on a new or existing subnet for a tenant"
             print "6. Exit Admin Console"
             admin_input = raw_input("Enter your choice: ")
             if int(admin_input) == 1:
                 # Call database_info()
             elif int(admin_input) == 2:
-                # Call infra()
+                with open(hyplistfile, mode = 'rb') as f:
+                    hypervisors = f.read().split('\n');
+                result = infra(hypervisors)
+                if result == True:
+                    print "SUCCESS: HypeTunnel Infrastructure is now up"
+                else:
+                    print "FAILED: HypeTunnel Infrastructure has not been modified"
             elif int(admin_input) == 3:
                 # Call tenant_infra()
             elif int(admin_input) == 4:
-                # Call tenant_addvms()
+                tenantid = raw_input("Enter the tenant ID for which you want to add VMs: ")
+                subnet = raw_input("Enter the subnet on which you want to add these VMs: ")
+                mask = subnet.split('/')[1]
+                with open(hyplistfile, mode = 'rb') as f:
+                    hypervisors = f.read().split('\n');
+                    Nhyp = len(hypervisors)
+                    hypMatrix = [{"ip":hypervisors[x].split("*")[0],"uname":hypervisors[x].split("*")[1], "pwd":hypervisors[x].split("*")[2]} for x in range(hypervisors)]
+                new_subnet = True
+                with open(databasefile, mode = 'rb') as fd:
+                    line = fd.readline()
+                    vm_name_start = 1
+                    while line:
+                        parts = line.split('*')
+                        if parts[1] == tenantid:
+                            if parts[2] == subnet:
+                                new_subnet = False
+                if new_subnet:
+                    print "Subnet " + subnet + " doesn't exist. Creating it..."
+                    tenant_addsubnet(subnet, tenantid, hypervisors)
+                vms = raw_input("Enter the number of additional VMs:")
+                with open(databasefile, mode = 'rb') as fd:
+                    line = fd.readline()
+                    vm_name_start = 1
+                    vm_ip_start = 2
+                    while line:
+                        parts = line.split('*')
+                        if parts[1] == tenantid:
+                            id = int(parts[3].split('M')[1])
+                            ip = int(parts[4].split('.')[3].split('/')[0])
+                            if id >= vm_name_start:
+                                vm_name_start = id
+                            if ip >= vm_ip_start:
+                                vm_ip_start = ip
+                        line = fd.readline()
+                    vm_name_start++
+                    vm_ip_start++
+
+                i = 0
+                for vm in range(int(vms)):
+                    if i == Nhyp-1:
+                        i = 0
+                    vm_name = "T"+tenantid+"_VM"+str(vm_name_start)
+                    vm_ip = subnet.rsplit('.',1)[0]+str(vm_ip_start)+'/'+mask
+                    vm_name_start++
+                    vm_ip_start++
+                    tenant_addvm(vm_name, vm_ip, tenantid, hypMatrix[i]['ip'], hypMatrix[i]['uname'], hypMatrix[i]['pwd'])
+                    i++
+                vm_mac = tenant_addvm()
+                # Log the vm_mac and add it to database file 
+
             elif int(admin_input) == 5:
                 # Call tenant_delvms()
             elif int(admin_input) == 6:
