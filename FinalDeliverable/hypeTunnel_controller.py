@@ -77,7 +77,7 @@ def tenant_addsubnet(subnet, tenant, hypervisors):
 
 def tenant_addvm(vm_name, vm_ip, tenant, hypervisor, uname, pwd):
     '''Function that calls add_vm.sh to create VMs in a specific subnet for a tenant on a hypervisor'''
-    run_command = "sudo bash $HOME/HypeTunnel/Conf/add_vm.sh "+vm_name+" "+vm_ip
+    run_command = "sudo bash $HOME/HypeTunnel/Conf/add_vm.sh "+vm_name+" "+vm_ip+" "+tenant
     child = ssh_command(uname, hypervisor, pwd, run_command)
     child.expect(pexpect.EOF)
     vm_mac = child.before
@@ -185,7 +185,7 @@ while int(user_input) != 3:
                     tenant_addvm(vm_name, vm_ip, tenantid, hypMatrix[i]['ip'], hypMatrix[i]['uname'], hypMatrix[i]['pwd'])
                     i++
                 vm_mac = tenant_addvm()
-                # Log the vm_mac and add it to database file 
+                # Log the vm_mac and add it to database file
 
             elif int(admin_input) == 5:
                 # Call tenant_delvms()
