@@ -162,7 +162,8 @@ while int(user_input) != 3:
                                 new_subnet = False
                 if new_subnet:
                     print "Subnet " + subnet + " doesn't exist. Creating it..."
-                    tenant_addsubnet(subnet, tenantid, hypervisors)
+                    for hypElement in hypMatrix:
+                        tenant_addsubnet(subnet, tenantid, hypElement['ip'], hypElement['uname'], hypElement['pwd'])
                 vms = raw_input("Enter the number of additional VMs:")
                 with open(databasefile, mode = 'rb') as fd:
                     line = fd.readline()
