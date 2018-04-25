@@ -1,5 +1,6 @@
 import os
 import filecmp
+import pexpect
 
 #*********************************************************************************************************************************************************
 #
@@ -68,9 +69,15 @@ def tenant_infra():
 
 #*********************************************************************************************************************************************************
 
-def tenant_addsubnet(subnet, tenant, hypervisors):
+def tenant_addsubnet(subnet, tenant, hypervisor, uname, pwd):
     '''Function to a subnet for a tenant in all hypervisors'''
-    success = True
+    success = False
+    run_command = "sudo bash $HOME/HypeTunnel/Conf/add_subnet.sh "+tenant+" "+subnet
+    child = ssh_command(uname,hypervisor,pwd,run_command)
+    child.expect(pexpect.EOF)
+    output = child.before
+    if output == '1':
+        success = True
     return success
 
 #*********************************************************************************************************************************************************
