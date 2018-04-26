@@ -10,6 +10,7 @@ GW=$(printf "%d.%d.%d.%d\n" "$((i1 & (2#$m1)))" "$((i2 & (2#$m2)))" "$((i3 & (2#
 #-----------------------------------------------------------------------
 
 #Create container if it doesn't exist
+#TODO: install iproute2 iputils-ping packages during creation
 vm_dup=$(sudo docker ps -a | grep -c $1)
 if [[ vm_dup -eq 0 ]]
 then
