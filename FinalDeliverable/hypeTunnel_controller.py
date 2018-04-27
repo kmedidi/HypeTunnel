@@ -131,7 +131,7 @@ if os.path.exists(hyplistfile) != True:
     with open(hyplistfile, mode='w+') as fh:
         user_ch = 'Y'
         print "Running first time setup"
-        while user_ch == 'Y' | user_ch == 'y':
+        while user_ch == 'Y' or user_ch == 'y':
             hyp = raw_input("Enter the hypervisor IP: ")
             uname = raw_input("Enter the username: ")
             pwd = raw_input("Enter the password: ")
@@ -154,8 +154,8 @@ while int(user_input) != 3:
             print "1. Database info"
             print "2. Create HypeTunnel infrastructure"
             print "3. Add/Remove a tenant"
-            print "4. Add compute resource on a new or existing subnet for a tenant"
-            print "5. Remove compute resources on a new or existing subnet for a tenant"
+            print "4. Add VM on a new or existing subnet for a tenant"
+            print "5. Remove VM from existing subnet for a tenant"
             print "6. Exit Admin Console"
             admin_input = raw_input("Enter your choice: ")
             if int(admin_input) == 1:
@@ -336,7 +336,32 @@ while int(user_input) != 3:
                 # TODO: Log the vm_mac and add it to database file
 
             elif int(admin_input) == 5:
-                # TODO: Call tenant_delvms()
+                tenant = raw_input("Enter the tenant id: ")
+                vm_name = raw_input("Enter the VM name: ")
+                del_ch = raw_input("Do you want to save this VM image to boot later?: ")
+                with open(databasefile, mode = 'rb') as fd:
+                    line = fd.readline()
+                    while line:
+                        parts = line.split('*')
+                        if parts[1] == tenantid and vm_name == parts[3]:
+                            rem_line = line
+                            hypervisor = parts[0]
+                        line = fd.readline()
+                with open(hyplistfile, mode = 'rb') as f:
+                    for line in f:
+                        hypervisors.append(line.rstrip());
+                    Nhyp = len(hypervisors)
+                    hypMatrix = [{"ip":hypervisors[x].split("*")[0],"uname":hypervisors[x].split("*")[1], "pwd":hypervisors[x].split("*")[2]} for x in range(len(hypervisors))]
+                for hypElement in hypMatrix:
+                    if hypElement['ip'] == hypervisor:
+                        success = tenant_delvm(vm_name, tenant, hypervisor, hypElement['uname'], hypElement['pwd'])
+                if success:
+                    with open(databasefile, mode = 'rb') as fd:
+                        contents = fd.read()
+                        contents.replace(rem_line,"")
+                    with open(databasefile, mode = 'w') as fd:
+                        fd.write(contents)
+                    print "VM deleted successfully"
             elif int(admin_input) == 6:
                 break
             else:
