@@ -46,7 +46,7 @@ def infra(hypervisors):
         remote_ip_list = ""
         for hyp in hypervisors:
             if hyp != hypervisor:
-                remote_ip_list += str(hyp)+" "
+                remote_ip_list += str(hyp.split("*")[0])+" "
         run_command = "bash $HOME/HypeTunnel/Conf/infra.sh " + hypMatrix[i]['ip'] + " " + remote_ip_list
         child = ssh_command(hypMatrix[i]['uname'],hypMatrix[i]['ip'],hypMatrix[i]['pwd'],run_command)
         child.expect(pexpect.EOF)
@@ -158,16 +158,20 @@ while int(user_input) != 3:
             if int(admin_input) == 1:
                 # TODO: Call database_info()
             elif int(admin_input) == 2:
+                hypervisors = []
                 with open(hyplistfile, mode = 'rb') as f:
-                    hypervisors = f.read().split('\n');
+                    for line in f:
+                        hypervisors.append(line.rstrip());
                 result = infra(hypervisors)
                 if result == True:
                     print "SUCCESS: HypeTunnel Infrastructure is now up"
                 else:
                     print "FAILED: HypeTunnel Infrastructure has not been modified"
             elif int(admin_input) == 3:
+                hypervisors = []
                 with open(hyplistfile, mode = 'rb') as f:
-                    hypervisors = f.read().split('\n');
+                    for line in f:
+                        hypervisors.append(line.rstrip());
                     Nhyp = len(hypervisors)
                     hypMatrix = [{"ip":hypervisors[x].split("*")[0],"uname":hypervisors[x].split("*")[1], "pwd":hypervisors[x].split("*")[2]} for x in range(len(hypervisors))]
                 print "H Y P E R V I S O R  O V E R L A Y  N E T W O R K  --  h y p e T u n n e l  --  T E N A N T  C R A T I O N"
@@ -274,11 +278,13 @@ while int(user_input) != 3:
                     continue
 
             elif int(admin_input) == 4:
+                hypervisors = []
                 tenantid = raw_input("Enter the tenant ID for which you want to add VMs: ")
                 subnet = raw_input("Enter the subnet on which you want to add these VMs: ")
                 mask = subnet.split('/')[1]
                 with open(hyplistfile, mode = 'rb') as f:
-                    hypervisors = f.read().split('\n');
+                    for line in f:
+                        hypervisors.append(line.rstrip());
                     Nhyp = len(hypervisors)
                     hypMatrix = [{"ip":hypervisors[x].split("*")[0],"uname":hypervisors[x].split("*")[1], "pwd":hypervisors[x].split("*")[2]} for x in range(len(hypervisors))]
                 new_subnet = True
