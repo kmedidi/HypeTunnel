@@ -365,6 +365,7 @@ while int(user_input) != 3:
             elif int(admin_input) == 6:
                 break
             else:
+                print "Wrong input"
                 admin_input = 1
                 continue
     elif int(user_input) == 2:
@@ -378,8 +379,10 @@ while int(user_input) != 3:
             tenant_input = raw_input("Enter your choice: ")
             if int(tenant_input) == 1:
                 # TODO: Create tenant specific database info
+                print "TODO"
             elif int(tenant_input) == 2:
                 # TODO: Create a log file specific to tenant
+                print "TODO"
             elif int(tenant_input) == 3:
                 break
             else:
