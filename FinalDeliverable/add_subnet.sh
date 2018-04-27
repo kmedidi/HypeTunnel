@@ -1,9 +1,14 @@
 #!/bin/bash
+IFS=. read -r i1 i2 i3 i4 <<< $(echo $2 | cut -d/ -f1)
+PREFIX=$(echo $2 | cut -d/ -f2)
+IFS=. read -r xx m1 m2 m3 m4 <<< $(for a in $(seq 1 32); do if [ $(((a - 1) % 8)) -eq 0 ]; then echo -n .; fi; if [ $a -le $PREFIX ]; then echo -n 1; else echo -n 0; fi; done)
 
-veth1=$2 | tr -dc '[:alnum:]'
-sudo ip link add ot$1_$veth1 type veth peer name to$1_$veth1
-sudo ip link set to$1_$veth1 netns t$1_NS
+GW=$(printf "%d.%d.%d.%d\n" "$((i1 & (2#$m1)))" "$((i2 & (2#$m2)))" "$((i3 & (2#$m3)))" "$((i4 & (2#$m4))+1)")
+veth1=$(echo $2 | tr -dc '[:alnum:]')
+
+sudo ip link add ot$1_$veth1 type veth peer name t$1o_$veth1
+sudo ip link set t"$1"o_$veth1 netns T$1_NS
 sudo ovs-vsctl add-port central_ovs ot$1_$veth1 tag=$1
 
-sudo ip netns exec t$1_NS ip address add $2 dev to$1_$veth1
-sudo ip netns exec t$1_NS ip address | grep -c $2
+sudo ip netns exec T$1_NS ip address add $GW dev t$1o_$veth1
+sudo ip netns exec T$1_NS ip address | grep -c $GW
