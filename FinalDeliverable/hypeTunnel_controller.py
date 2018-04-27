@@ -34,6 +34,7 @@ def ssh_command (user, host, password, command):
 
 def infra(hypervisors):
     '''Function that calls infra.sh to created basic infra'''
+    print "************************************"
     hypMatrix = [{"ip":hypervisors[x].split("*")[0],"uname":hypervisors[x].split("*")[1], "pwd":hypervisors[x].split("*")[2]} for x in range(len(hypervisors))]
 
     ver_commands = []
@@ -41,6 +42,7 @@ def infra(hypervisors):
     ver_commands.append("sudo ovs-vsctl show | grep -c tunnel_ovs")
     i = 0
     success = True
+
     for hypervisor in hypervisors:
         # Send the shell script to the remote hypervisor
         remote_ip_list = ""
@@ -50,13 +52,14 @@ def infra(hypervisors):
         run_command = "bash $HOME/HypeTunnel/Conf/infra.sh " + hypMatrix[i]['ip'] + " " + remote_ip_list
         child = ssh_command(hypMatrix[i]['uname'],hypMatrix[i]['ip'],hypMatrix[i]['pwd'],run_command)
         child.expect(pexpect.EOF)
-        #output = child.before
+        output = child.before
         for ver_command in ver_commands:
             child = ssh_command(hypMatrix[i]['uname'],hypMatrix[i]['ip'],hypMatrix[i]['pwd'],ver_command)
             child.expect(pexpect.EOF)
             output = child.before
             if int(output) <= 0:
                 success = False
+        i+=1
     return success
 
 #*********************************************************************************************************************************************************
@@ -128,7 +131,7 @@ if os.path.exists(hyplistfile) != True:
     with open(hyplistfile, mode='w+') as fh:
         user_ch = 'Y'
         print "Running first time setup"
-        while user_ch == 'Y':
+        while user_ch == 'Y' | user_ch == 'y':
             hyp = raw_input("Enter the hypervisor IP: ")
             uname = raw_input("Enter the username: ")
             pwd = raw_input("Enter the password: ")
@@ -157,6 +160,7 @@ while int(user_input) != 3:
             admin_input = raw_input("Enter your choice: ")
             if int(admin_input) == 1:
                 # TODO: Call database_info()
+                print "Database info"
             elif int(admin_input) == 2:
                 hypervisors = []
                 with open(hyplistfile, mode = 'rb') as f:
