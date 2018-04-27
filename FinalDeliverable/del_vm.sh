@@ -28,9 +28,9 @@ then
   State=$(sudo docker ps -a | grep -c "<\$C_NAME\>")
   if [[ $State == 0 ]];then
     #echo "Successfully removed $C_NAME"
-    echo "true"
+    echo "True"
   fi
 else
   #echo " Container not present! Enter the correct Container name."
-  echo "false"
+  echo "False"
 fi
