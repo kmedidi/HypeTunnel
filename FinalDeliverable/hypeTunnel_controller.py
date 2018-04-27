@@ -99,8 +99,10 @@ def tenant_addvm(vm_name, vm_ip, tenant, hypervisor, uname, pwd):
 #*********************************************************************************************************************************************************
 
 def tenant_delvm(vm_name, tenant, hypervisor, uname, pwd):
-    '''Function that calls del_vms.sh to delete VMs of a specific vm_name for a tenant on a hypervisor'''
-    success = True
+    '''Function that calls del_vm.sh to delete VMs of a specific vm_name for a tenant on a hypervisor'''
+    run_command = "sudo bash $HOME/HypeTunnel/Conf/add_vm.sh "+tenant+" "+vm_name
+    child = ssh_command(uname, hypervisor, pwd, run_command)
+    success = child.before
     return success
 
 #*********************************************************************************************************************************************************
