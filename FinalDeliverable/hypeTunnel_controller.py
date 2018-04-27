@@ -109,9 +109,18 @@ def tenant_delvm(vm_name, tenant, hypervisor, uname, pwd):
 
 #*********************************************************************************************************************************************************
 
-def database_info():
+def database_info(databasefile):
     '''Function that displays the database file after a password verification'''
-    #TODO
+    print "****************************************************************************************************************************"
+    print "---HYPERVISOR----TENANT-----SUBNET-------------VM_NAME-----------VM_IP---------------VM_MAC------  "
+    with open(databasefile, mode='rb') as fd:
+        line = fd.readline()
+        while line:
+            parts = line.split('*')
+            print parts[0]+"  "+parts[1]+"      "+parts[2]+"       "+parts[3]+"        "+parts[4]+"     "+parts[5]+" "
+            line = fd.readline()
+    print "****************************************************************************************************************************"
+
 #*********************************************************************************************************************************************************
 
 def download_tenant_logs():
@@ -177,8 +186,8 @@ while int(user_input) != 3:
                         hypervisors.append(line.rstrip());
                     Nhyp = len(hypervisors)
                     hypMatrix = [{"ip":hypervisors[x].split("*")[0],"uname":hypervisors[x].split("*")[1], "pwd":hypervisors[x].split("*")[2]} for x in range(len(hypervisors))]
-                print "H Y P E R V I S O R  O V E R L A Y  N E T W O R K  --  h y p e T u n n e l  --  T E N A N T  C R A T I O N"
-                print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                print "H Y P E R V I S O R  O V E R L A Y  N E T W O R K  --  h y p e T u n n e l  --  T E N A N T  C R E A T I O N"
+                print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
                 print "1. Add Tenant"
                 print "2. Remove Tenant"
                 print "3. Exit"
@@ -236,8 +245,8 @@ while int(user_input) != 3:
                                                 if ip >= vm_ip_start:
                                                     vm_ip_start = ip
                                             line = fd.readline()
-                                        vm_name_start++
-                                        vm_ip_start++
+                                        vm_name_start+=1
+                                        vm_ip_start+=1
 
                                     i = 0
                                     for vm in range(int(vms)):
@@ -245,8 +254,8 @@ while int(user_input) != 3:
                                             i = 0
                                         vm_name = "T"+tenantid+"_VM"+str(vm_name_start)
                                         vm_ip = subnet.rsplit('.',1)[0]+str(vm_ip_start)+'/'+mask
-                                        vm_name_start++
-                                        vm_ip_start++
+                                        vm_name_start+=1
+                                        vm_ip_start+=1
                                         vm_mac = tenant_addvm(vm_name, vm_ip, tenantid, hypMatrix[i]['ip'], hypMatrix[i]['uname'], hypMatrix[i]['pwd'])
                                         if vm_mac:
                                             database_line = hypMatrix[i]['ip']+"*"+"T"+tenantid+"*"+subnet+"*"+vm_name+"*"+vm_ip+"*"+vm_mac+"\n"
@@ -281,7 +290,7 @@ while int(user_input) != 3:
                         with open(databasefile, mode = 'rb') as fd:
                             contents = fd.read()
                             for rem_line in rem_lines:
-                                contents.replace(rem_line,"")
+                                contents = contents.replace(rem_line,"")
                         with open(databasefile, mode = 'w') as fd:
                             fd.write(contents)
                     else:
@@ -308,6 +317,7 @@ while int(user_input) != 3:
                         if parts[1] == tenantid:
                             if parts[2] == subnet:
                                 new_subnet = False
+                        line = fd.readline()
                 if new_subnet:
                     print "Subnet " + subnet + " doesn't exist. Creating it..."
                     for hypElement in hypMatrix:
@@ -327,8 +337,8 @@ while int(user_input) != 3:
                             if ip >= vm_ip_start:
                                 vm_ip_start = ip
                         line = fd.readline()
-                    vm_name_start++
-                    vm_ip_start++
+                    vm_name_start+=1
+                    vm_ip_start+=1
 
                 i = 0
                 for vm in range(int(vms)):
@@ -336,19 +346,19 @@ while int(user_input) != 3:
                         i = 0
                     vm_name = "T"+tenantid+"_VM"+str(vm_name_start)
                     vm_ip = subnet.rsplit('.',1)[0]+str(vm_ip_start)+'/'+mask
-                    vm_name_start++
-                    vm_ip_start++
+                    vm_name_start+=1
+                    vm_ip_start+=1
                     vm_mac = tenant_addvm(vm_name, vm_ip, tenantid, hypMatrix[i]['ip'], hypMatrix[i]['uname'], hypMatrix[i]['pwd'])
                     if vm_mac:
                         database_line = hypMatrix[i]['ip']+"*"+"T"+tenantid+"*"+subnet+"*"+vm_name+"*"+vm_ip+"*"+vm_mac+"\n"
                         with open(databasefile, mode='w+') as fd:
                             fd.write(database_line)
-                    i++
+                    i+=1
                 vm_mac = tenant_addvm()
                 # TODO: Log the vm_mac and add it to database file
 
             elif int(admin_input) == 5:
-                tenant = raw_input("Enter the tenant id: ")
+                tenantid = raw_input("Enter the tenant id: ")
                 vm_name = raw_input("Enter the VM name: ")
                 del_ch = raw_input("Do you want to save this VM image to boot later?: ")
                 with open(databasefile, mode = 'rb') as fd:
@@ -359,6 +369,7 @@ while int(user_input) != 3:
                             rem_line = line
                             hypervisor = parts[0]
                         line = fd.readline()
+                hypervisors = []
                 with open(hyplistfile, mode = 'rb') as f:
                     for line in f:
                         hypervisors.append(line.rstrip());
@@ -366,11 +377,11 @@ while int(user_input) != 3:
                     hypMatrix = [{"ip":hypervisors[x].split("*")[0],"uname":hypervisors[x].split("*")[1], "pwd":hypervisors[x].split("*")[2]} for x in range(len(hypervisors))]
                 for hypElement in hypMatrix:
                     if hypElement['ip'] == hypervisor:
-                        success = tenant_delvm(vm_name, tenant, hypervisor, hypElement['uname'], hypElement['pwd'])
+                        success = tenant_delvm(vm_name, tenantid, hypervisor, hypElement['uname'], hypElement['pwd'])
                 if success:
                     with open(databasefile, mode = 'rb') as fd:
                         contents = fd.read()
-                        contents.replace(rem_line,"")
+                        contents = contents.replace(rem_line,"")
                     with open(databasefile, mode = 'w') as fd:
                         fd.write(contents)
                     print "VM deleted successfully"
@@ -381,7 +392,7 @@ while int(user_input) != 3:
                 admin_input = 1
                 continue
     elif int(user_input) == 2:
-        tenant_input == "1"
+        tenant_input = "1"
         while int(tenant_input) != 3:
             print "H Y P E R V I S O R  O V E R L A Y  N E T W O R K  --  h y p e T u n n e l  --  T E N A N T  C O N S O L E"
             print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
