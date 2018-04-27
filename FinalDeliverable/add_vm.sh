@@ -13,7 +13,7 @@ GW=$(printf "%d.%d.%d.%d\n" "$((i1 & (2#$m1)))" "$((i2 & (2#$m2)))" "$((i3 & (2#
 vm_dup=$(sudo docker ps -a | grep -c $1)
 if [[ vm_dup -eq 0 ]]
 then
-  sudo docker run -d --name $1 ubuntu sleep infinity
+  sudo docker run -itd --name $1 ubuntu
   #Create veth pair and attach it to the central_ovs and container
   sudo ip link add $1_0 type veth peer name $1_1
   sudo ip link set $1_0 up
