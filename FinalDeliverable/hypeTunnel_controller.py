@@ -122,7 +122,6 @@ def download_tenant_logs():
 dir_path = os.path.dirname(os.path.realpath(__file__))
 hyplistfile = dir_path+"\hyplistfile.txt"
 databasefile = dir_path+"\databasefile.txt"
-
 if os.path.exists(databasefile) != True:
     with open(databasefile, mode='w+') as fd:
         print "Created the database file..."
@@ -185,66 +184,75 @@ while int(user_input) != 3:
                 print "3. Exit"
                 ten_choice = raw_input("Enter your choice: ")
                 if int(ten_choice) == 1:
-                    # TODO: Logic to create a new tenant id
+                    tenantid = 1
+                    with open(databasefile, mode = 'rb') as fd:
+                        line = fd.readline()
+                        while line:
+                            parts = line.split('*')
+                            if int(filter(str.isdigit, parts[1])) >= tenantid:
+                                tenantid = int(filter(str.isdigit, parts[1]))
+                            line = fd.readline()
+                    tenantid += 1
+
                     new_subnet = True
                     for hypElement in hypMatrix:
                         success = tenant_infra(tenant, "true", hypElement['ip'], hypElement['uname'], hypElement['pwd'])
                     if sucess:
                         print "Tenant Base Infra created successfully!"
-                        print "1. Create subnets and VMs for this tenant now"
-                        print "2. Exit & Create subnets later"
-                        user_choice = raw_input("Enter your choice: ")
-                        if int(user_choice) == 1:
-                            subnet = 'a'
-                            while subnet != 'X':
-                                subnet = raw_input("Enter the subnet ID (Type 'X' to exit): ")
-                                if subnet != 'X':
-                                    mask = subnet.split('/')[1]
-                                    new_subnet = True
+                        print "Create subnets and VMs for this tenant now"
+                        subnet = 'a'
+                        while subnet != 'X':
+                            subnet = raw_input("Enter the subnet ID (Type 'X' to exit): ")
+                            if subnet != 'X':
+                                mask = subnet.split('/')[1]
+                                new_subnet = True
+                                with open(databasefile, mode = 'rb') as fd:
+                                    line = fd.readline()
+                                    vm_name_start = 1
+                                    while line:
+                                        parts = line.split('*')
+                                        if parts[1] == tenantid:
+                                            if parts[2] == subnet:
+                                                new_subnet = False
+                                        line = fd.readline()
+                                if new_subnet:
+                                    print "Subnet " + subnet + " doesn't exist. Creating it..."
+                                    for hypElement in hypMatrix:
+                                        tenant_addsubnet(subnet, tenantid, hypElement['ip'], hypElement['uname'], hypElement['pwd'])
+                                vms = raw_input("Enter the number of VMs: ")
+                                if int(vms) > 0:
+                                    # Logic to call add_vm repeatedly
                                     with open(databasefile, mode = 'rb') as fd:
                                         line = fd.readline()
                                         vm_name_start = 1
+                                        vm_ip_start = 2
                                         while line:
                                             parts = line.split('*')
                                             if parts[1] == tenantid:
-                                                if parts[2] == subnet:
-                                                    new_subnet = False
-                                    if new_subnet:
-                                        print "Subnet " + subnet + " doesn't exist. Creating it..."
-                                        for hypElement in hypMatrix:
-                                            tenant_addsubnet(subnet, tenantid, hypElement['ip'], hypElement['uname'], hypElement['pwd'])
-                                    vms = raw_input("Enter the number of VMs: ")
-                                    if int(vms) > 0:
-                                        # Logic to call add_vm repeatedly
-                                        with open(databasefile, mode = 'rb') as fd:
+                                                id = int(parts[3].split('M')[1])
+                                                ip = int(parts[4].split('.')[3].split('/')[0])
+                                                if id >= vm_name_start:
+                                                    vm_name_start = id
+                                                if ip >= vm_ip_start:
+                                                    vm_ip_start = ip
                                             line = fd.readline()
-                                            vm_name_start = 1
-                                            vm_ip_start = 2
-                                            while line:
-                                                parts = line.split('*')
-                                                if parts[1] == tenantid:
-                                                    id = int(parts[3].split('M')[1])
-                                                    ip = int(parts[4].split('.')[3].split('/')[0])
-                                                    if id >= vm_name_start:
-                                                        vm_name_start = id
-                                                    if ip >= vm_ip_start:
-                                                        vm_ip_start = ip
-                                                line = fd.readline()
-                                            vm_name_start++
-                                            vm_ip_start++
+                                        vm_name_start++
+                                        vm_ip_start++
 
-                                        i = 0
-                                        for vm in range(int(vms)):
-                                            if i == Nhyp-1:
-                                                i = 0
-                                            vm_name = "T"+tenantid+"_VM"+str(vm_name_start)
-                                            vm_ip = subnet.rsplit('.',1)[0]+str(vm_ip_start)+'/'+mask
-                                            vm_name_start++
-                                            vm_ip_start++
-                                            tenant_addvm(vm_name, vm_ip, tenantid, hypMatrix[i]['ip'], hypMatrix[i]['uname'], hypMatrix[i]['pwd'])
-                                            i++
-                                        vm_mac = tenant_addvm()
-                                        # TODO: Log the vm_mac and add it to database file
+                                    i = 0
+                                    for vm in range(int(vms)):
+                                        if i == Nhyp-1:
+                                            i = 0
+                                        vm_name = "T"+tenantid+"_VM"+str(vm_name_start)
+                                        vm_ip = subnet.rsplit('.',1)[0]+str(vm_ip_start)+'/'+mask
+                                        vm_name_start++
+                                        vm_ip_start++
+                                        vm_mac = tenant_addvm(vm_name, vm_ip, tenantid, hypMatrix[i]['ip'], hypMatrix[i]['uname'], hypMatrix[i]['pwd'])
+                                        if success:
+                                            database_line = hypMatrix[i]['ip']+"*"+"T"+tenantid+"*"+subnet+"*"+vm_name+"*"+vm_ip+"*"+vm_mac+"\n"
+                                            with open(databasefile, mode='w+') as fd:
+                                                fd.write(database_line)
+                                        i+=1
 
                 elif int(ten_choice) == 2:
                     # Logic to remove tenant NS and all VMs
