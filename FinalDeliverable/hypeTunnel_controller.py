@@ -34,12 +34,11 @@ def ssh_command (user, host, password, command):
 
 def infra(hypervisors):
     '''Function that calls infra.sh to created basic infra'''
-    hypMatrix = [{"ip":hypervisors[x].split("*")[0],"uname":hypervisors[x].split("*")[1], "pwd":hypervisors[x].split("*")[2]} for x in range(hypervisors)]
+    hypMatrix = [{"ip":hypervisors[x].split("*")[0],"uname":hypervisors[x].split("*")[1], "pwd":hypervisors[x].split("*")[2]} for x in range(len(hypervisors))]
 
     ver_commands = []
     ver_commands.append("sudo ovs-vsctl show | grep -c central_ovs")
     ver_commands.append("sudo ovs-vsctl show | grep -c tunnel_ovs")
-    ver_commands.append("sudo ovs-vsctl show | grep -c central_ovs")
     i = 0
     success = True
     for hypervisor in hypervisors:
@@ -56,7 +55,7 @@ def infra(hypervisors):
             child = ssh_command(hypMatrix[i]['uname'],hypMatrix[i]['ip'],hypMatrix[i]['pwd'],ver_command)
             child.expect(pexpect.EOF)
             output = child.before
-            if int(output) < 0:
+            if int(output) <= 0:
                 success = False
     return success
 
@@ -115,9 +114,25 @@ def download_tenant_logs():
     #TODO
 
 #*********************************************************************************************************************************************************
+dir_path = os.path.dirname(os.path.realpath(__file__))
+hyplistfile = dir_path+"\hyplistfile.txt"
+databasefile = dir_path+"\databasefile.txt"
 
-hyplistfile = "hyplistfile.txt"
-databasefile = "databasefile.txt"
+if os.path.exists(databasefile) != True:
+    with open(databasefile, mode='w+') as fd:
+        print "Created the database file..."
+
+if os.path.exists(hyplistfile) != True:
+    with open(hyplistfile, mode='w+') as fh:
+        user_ch = 'Y'
+        print "Running first time setup"
+        while user_ch == 'Y':
+            hyp = raw_input("Enter the hypervisor IP: ")
+            uname = raw_input("Enter the username: ")
+            pwd = raw_input("Enter the password: ")
+            fh.write(hyp+"*"+uname+"*"+pwd+"\n")
+            user_ch = raw_input("Do you have more hypervisors?('Y' or 'N'): ")
+
 user_input = "1"
 while int(user_input) != 3:
     print "H Y P E R V I S O R  O V E R L A Y  N E T W O R K  --  h y p e T u n n e l"
@@ -152,9 +167,9 @@ while int(user_input) != 3:
                 with open(hyplistfile, mode = 'rb') as f:
                     hypervisors = f.read().split('\n');
                     Nhyp = len(hypervisors)
-                    hypMatrix = [{"ip":hypervisors[x].split("*")[0],"uname":hypervisors[x].split("*")[1], "pwd":hypervisors[x].split("*")[2]} for x in range(hypervisors)]
-                print "H Y P E R V I S O R  O V E R L A Y  N E T W O R K  --  h y p e T u n n e l  --  T E N A N T  C O N S O L E"
-                print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                    hypMatrix = [{"ip":hypervisors[x].split("*")[0],"uname":hypervisors[x].split("*")[1], "pwd":hypervisors[x].split("*")[2]} for x in range(len(hypervisors))]
+                print "H Y P E R V I S O R  O V E R L A Y  N E T W O R K  --  h y p e T u n n e l  --  T E N A N T  C R A T I O N"
+                print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
                 print "1. Add Tenant"
                 print "2. Remove Tenant"
                 print "3. Exit"
@@ -263,7 +278,7 @@ while int(user_input) != 3:
                 with open(hyplistfile, mode = 'rb') as f:
                     hypervisors = f.read().split('\n');
                     Nhyp = len(hypervisors)
-                    hypMatrix = [{"ip":hypervisors[x].split("*")[0],"uname":hypervisors[x].split("*")[1], "pwd":hypervisors[x].split("*")[2]} for x in range(hypervisors)]
+                    hypMatrix = [{"ip":hypervisors[x].split("*")[0],"uname":hypervisors[x].split("*")[1], "pwd":hypervisors[x].split("*")[2]} for x in range(len(hypervisors))]
                 new_subnet = True
                 with open(databasefile, mode = 'rb') as fd:
                     line = fd.readline()
