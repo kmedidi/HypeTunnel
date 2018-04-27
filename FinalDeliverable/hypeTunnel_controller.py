@@ -248,7 +248,7 @@ while int(user_input) != 3:
                                         vm_name_start++
                                         vm_ip_start++
                                         vm_mac = tenant_addvm(vm_name, vm_ip, tenantid, hypMatrix[i]['ip'], hypMatrix[i]['uname'], hypMatrix[i]['pwd'])
-                                        if success:
+                                        if vm_mac:
                                             database_line = hypMatrix[i]['ip']+"*"+"T"+tenantid+"*"+subnet+"*"+vm_name+"*"+vm_ip+"*"+vm_mac+"\n"
                                             with open(databasefile, mode='w+') as fd:
                                                 fd.write(database_line)
@@ -338,7 +338,11 @@ while int(user_input) != 3:
                     vm_ip = subnet.rsplit('.',1)[0]+str(vm_ip_start)+'/'+mask
                     vm_name_start++
                     vm_ip_start++
-                    tenant_addvm(vm_name, vm_ip, tenantid, hypMatrix[i]['ip'], hypMatrix[i]['uname'], hypMatrix[i]['pwd'])
+                    vm_mac = tenant_addvm(vm_name, vm_ip, tenantid, hypMatrix[i]['ip'], hypMatrix[i]['uname'], hypMatrix[i]['pwd'])
+                    if vm_mac:
+                        database_line = hypMatrix[i]['ip']+"*"+"T"+tenantid+"*"+subnet+"*"+vm_name+"*"+vm_ip+"*"+vm_mac+"\n"
+                        with open(databasefile, mode='w+') as fd:
+                            fd.write(database_line)
                     i++
                 vm_mac = tenant_addvm()
                 # TODO: Log the vm_mac and add it to database file
