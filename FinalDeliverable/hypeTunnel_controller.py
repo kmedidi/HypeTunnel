@@ -52,7 +52,7 @@ def infra(hypervisors):
         for hyp in hypervisors:
             if hyp != hypervisor:
                 remote_ip_list += str(hyp.split("*")[0])+" "
-        run_command = "bash $HOME/HypeTunnel/conf/infra.sh " + hypMatrix[i]['ip'] + " " + remote_ip_list
+        run_command = "bash $HOME/infra.sh " + hypMatrix[i]['ip'] + " " + remote_ip_list
         child = ssh_command(hypMatrix[i]['uname'],hypMatrix[i]['ip'],hypMatrix[i]['pwd'],run_command)
         child.expect(pexpect.EOF)
         os.system("sudo scp ./tenant_infra.sh "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/HypeTunnel/conf/tenant_infra.sh")
