@@ -47,11 +47,7 @@ def infra(hypervisors):
 
     for hypervisor in hypervisors:
         # Send the shell script to the remote hypervisor
-        os.system("sudo scp ./infra.sh "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/HypeTunnel/conf/infra.sh")
-        os.system("sudo scp ./tenant_infra.sh "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/HypeTunnel/conf/tenant_infra.sh")
-        os.system("sudo scp ./add_subnet.sh "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/HypeTunnel/conf/add_subnet.sh")
-        os.system("sudo scp ./add_vm.sh "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/HypeTunnel/conf/add_vm.sh")
-        os.system("sudo scp ./del_vm.sh "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/HypeTunnel/conf/del_vm.sh")
+        os.system("sudo scp ./infra.sh "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/infra.sh")
         remote_ip_list = ""
         for hyp in hypervisors:
             if hyp != hypervisor:
@@ -59,7 +55,10 @@ def infra(hypervisors):
         run_command = "bash $HOME/HypeTunnel/conf/infra.sh " + hypMatrix[i]['ip'] + " " + remote_ip_list
         child = ssh_command(hypMatrix[i]['uname'],hypMatrix[i]['ip'],hypMatrix[i]['pwd'],run_command)
         child.expect(pexpect.EOF)
-        output = child.before
+        os.system("sudo scp ./tenant_infra.sh "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/HypeTunnel/conf/tenant_infra.sh")
+        os.system("sudo scp ./add_subnet.sh "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/HypeTunnel/conf/add_subnet.sh")
+        os.system("sudo scp ./add_vm.sh "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/HypeTunnel/conf/add_vm.sh")
+        os.system("sudo scp ./del_vm.sh "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/HypeTunnel/conf/del_vm.sh")  
         for ver_command in ver_commands:
             child = ssh_command(hypMatrix[i]['uname'],hypMatrix[i]['ip'],hypMatrix[i]['pwd'],ver_command)
             child.expect(pexpect.EOF)
