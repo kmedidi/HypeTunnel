@@ -129,7 +129,7 @@ def write_log(log_line):
     dir_path = os.path.dirname(os.path.realpath(__file__))
     logfile = dir_path+"\logs.txt"
     tstamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
-    with open(logfile, mode='w+') as fl:
+    with open(logfile, mode='a+') as fl:
         fl.write(log_line+"------"+tstamp)
     #TODO
 
@@ -384,7 +384,7 @@ while int(user_input) != 3:
                     if i == Nhyp-1:
                         i = 0
                     vm_name = "T"+str(tenantid)+"_VM"+str(vm_name_start)
-                    vm_ip = subnet.rsplit('.',1)[0]+str(vm_ip_start)+'/'+mask
+                    vm_ip = subnet.rsplit('.',1)[0]+'.'+str(vm_ip_start)+'/'+mask
                     vm_name_start+=1
                     vm_ip_start+=1
                     vm_mac = tenant_addvm(vm_name, vm_ip, str(tenantid), hypMatrix[i]['ip'], hypMatrix[i]['uname'], hypMatrix[i]['pwd'])

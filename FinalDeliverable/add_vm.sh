@@ -1,4 +1,4 @@
-#!/bin/#!/usr/bin/env bash
+#!/usr/bin/env bash
 #Shell script to create a docker container and add an interface and corresponding flow in central_ovs
 
 #----------------------------------------------------------------------
@@ -10,11 +10,14 @@ GW=$(printf "%d.%d.%d.%d\n" "$((i1 & (2#$m1)))" "$((i2 & (2#$m2)))" "$((i3 & (2#
 #-----------------------------------------------------------------------
 
 #Create container if it doesn't exist
-#TODO: install iproute2 iputils-ping packages during creation
+
 vm_dup=$(sudo docker ps -a | grep -c $1)
 if [[ vm_dup -eq 0 ]]
 then
   sudo docker run -itd --name $1 ubuntu
+  sudo docker exec $1 apt-get update
+  sudo docker exec $1 apt-get install iputils-ping
+  sudo docker exec $1 apt-get install iproute2
   #Create veth pair and attach it to the central_ovs and container
   sudo ip link add $1_0 type veth peer name $1_1
   sudo ip link set $1_0 up
@@ -25,6 +28,6 @@ then
   sudo nsenter -t $(pid) -n ip addr add $2 dev $1_1
   sudo nsenter -t $(pid) -n ip route del default
   sudo nsenter -t $(pid) -n ip route add default via $GW dev $1_1
-
+  sudo docker inspect --format='{{.NetworkSettings.MacAddress}}' $(docker ps | grep -o '[a-z0-9]\{12\}')
 #Add a flow entry in central_ovs with the mac using $3 - tenantid
 fi
