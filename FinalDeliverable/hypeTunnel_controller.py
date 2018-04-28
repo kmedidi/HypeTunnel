@@ -325,12 +325,19 @@ while int(user_input) != 3:
                                             write_log(line)
                                             rem_lines.append(line+'\n')
                                 line = fd.readline()
-                        with open(databasefile, mode = 'rb') as fd:
-                            contents = fd.read()
-                            for rem_line in rem_lines:
-                                contents = contents.replace(rem_line,"")
+                        new_contents = []
+                        with open(databasefile) as fd:
+                        	contents = fd.readlines()
+                        	for content in contents:
+                                    for rem_line in rem_lines:
+                                        if rem_line != content.strip():
+                                            print "rem_line:"+rem_line
+                                            print "rem_line"+content
+                                            new_contents.append(content)
+
                         with open(databasefile, mode = 'w') as fd:
-                            fd.write(contents.rstrip())
+                            '''contents = filter(lambda x: x.strip(), contents)'''
+                            fd.writelines(new_contents)
                     else:
                         continue
                 else:
@@ -418,11 +425,19 @@ while int(user_input) != 3:
                     if hypElement['ip'] == hypervisor:
                         success = tenant_delvm(vm_name, str(tenantid), hypervisor, hypElement['uname'], hypElement['pwd'])
                 if success:
-                    with open(databasefile, mode = 'rb') as fd:
-                        contents = fd.read()
-                        contents = contents.replace(rem_line,"")
+                    new_contents = []
+                    with open(databasefile) as fd:
+                    	contents = fd.readlines()
+                    	for content in contents:
+                                for rem_line in rem_lines:
+                                    if rem_line != content.strip():
+                                        print "rem_line:"+rem_line
+                                        print "rem_line"+content
+                                        new_contents.append(content)
+
                     with open(databasefile, mode = 'w') as fd:
-                        fd.write(contents.rstrip())
+                        '''contents = filter(lambda x: x.strip(), contents)'''
+                        fd.writelines(new_contents)
                     write_log("Tenant: "+str(tenantid)+" VM:"+vm_name+" deleted")
                     print "VM deleted successfully"
             elif int(admin_input) == 6:
