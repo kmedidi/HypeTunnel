@@ -1,4 +1,4 @@
-confimport os
+import os
 import filecmp
 import pexpect
 import datetime
