@@ -17,14 +17,14 @@ then
   if [[ $Status == "running" ]]
   then
     #echo "Shutting down $VM_NAME...."
-    sudo docker stop $C_NAME
+    sudo docker stop $C_NAME > /dev/null
   else if [[ $Status == "paused" ]]
   then
-    sudo docker unpause $C_NAME
-    sudo docker stop $C_NAME
+    sudo docker unpause $C_NAME > /dev/null
+    sudo docker stop $C_NAME > /dev/null
   fi
   #echo "Removing $C_NAME...."
-  sudo docker rm $C_NAME
+  sudo docker rm $C_NAME > /dev/null
   State=$(sudo docker ps -a | grep -c "<\$C_NAME\>")
   if [[ $State == 0 ]];then
     #echo "Successfully removed $C_NAME"
