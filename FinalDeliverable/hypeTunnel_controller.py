@@ -133,7 +133,7 @@ def database_info(databasefile):
 
 def write_log(log_line):
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    logfile = dir_path+"\logs.txt"
+    logfile = dir_path+"/logfile.txt"
     tstamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
     with open(logfile, mode='a+') as fl:
         fl.write("\n"+log_line+"------"+tstamp)
@@ -147,9 +147,9 @@ def download_tenant_logs():
 
 #*********************************************************************************************************************************************************
 dir_path = os.path.dirname(os.path.realpath(__file__))
-hyplistfile = dir_path+"\hyplistfile.txt"
-databasefile = dir_path+"\databasefile.txt"
-logfile = dir_path+"\logfile.txt"
+hyplistfile = dir_path+"/hyplistfile.txt"
+databasefile = dir_path+"/databasefile.txt"
+logfile = dir_path+"/logfile.txt"
 
 if os.path.exists(logfile) != True:
     with open(logfile, mode='w+') as fd:
