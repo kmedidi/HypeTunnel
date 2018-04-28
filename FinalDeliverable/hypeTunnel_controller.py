@@ -130,7 +130,7 @@ def write_log(log_line):
     logfile = dir_path+"\logs.txt"
     tstamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
     with open(logfile, mode='a+') as fl:
-        fl.write(log_line+"------"+tstamp)
+        fl.write("\n"+log_line+"------"+tstamp)
     #TODO
 
 #*********************************************************************************************************************************************************
@@ -232,7 +232,7 @@ while int(user_input) != 3:
                     new_subnet = True
                     for hypElement in hypMatrix:
                         success = tenant_infra(str(tenantid), "true", hypElement['ip'], hypElement['uname'], hypElement['pwd'])
-                    if sucess:
+                    if success:
                         print "Tenant Base Infra created successfully!"
                         write_log("Tenant "+str(tenantid)+" : Base Infra created")
                         print "Create subnets and VMs for this tenant now"
@@ -247,7 +247,7 @@ while int(user_input) != 3:
                                     vm_name_start = 1
                                     while line:
                                         parts = line.split('*')
-                                        if parts[1] ==str(tenantid):
+                                        if parts[1] == "T"+str(tenantid):
                                             if parts[2] == subnet:
                                                 new_subnet = False
                                         line = fd.readline()
@@ -258,7 +258,7 @@ while int(user_input) != 3:
                                         if success == False:
                                             break
                                     if success:
-                                        write_log("Tenant "+tenantid+" : Subnet created:"+subnet)
+                                        write_log("Tenant "+str(tenantid)+" : Subnet created:"+subnet)
                                 vms = raw_input("Enter the number of VMs: ")
                                 if int(vms) > 0:
                                     # Logic to call add_vm repeatedly
@@ -268,12 +268,12 @@ while int(user_input) != 3:
                                         vm_ip_start = 2
                                         while line:
                                             parts = line.split('*')
-                                            if parts[1] == str(tenantid):
+                                            if parts[1] == "T"+str(tenantid):
                                                 id = int(parts[3].split('M')[1])
                                                 ip = int(parts[4].split('.')[3].split('/')[0])
                                                 if id >= vm_name_start:
                                                     vm_name_start = id
-                                                if ip >= vm_ip_start:
+                                                if subnet == parts[2] and ip >= vm_ip_start:
                                                     vm_ip_start = ip
                                             line = fd.readline()
                                         vm_name_start+=1
@@ -281,7 +281,7 @@ while int(user_input) != 3:
 
                                     i = 0
                                     for vm in range(int(vms)):
-                                        if i == Nhyp-1:
+                                        if i == Nhyp:
                                             i = 0
                                         vm_name = "T"+str(tenantid)+"_VM"+str(vm_name_start)
                                         vm_ip = subnet.rsplit('.',1)[0]+'.'+str(vm_ip_start)+'/'+mask
@@ -290,7 +290,7 @@ while int(user_input) != 3:
                                         vm_mac = tenant_addvm(vm_name, vm_ip, str(tenantid), hypMatrix[i]['ip'], hypMatrix[i]['uname'], hypMatrix[i]['pwd'])
                                         if vm_mac:
                                             database_line = hypMatrix[i]['ip']+"*"+"T"+str(tenantid)+"*"+subnet+"*"+vm_name+"*"+vm_ip+"*"+vm_mac+"\n"
-                                            with open(databasefile, mode='w+') as fd:
+                                            with open(databasefile, mode='a+') as fd:
                                                 fd.write(database_line)
                                             write_log("Tenant "+str(tenantid)+" Subnet:"+subnet+" VM created-->VM name:"+vm_name+" VM MAC: "+vm_mac)
                                         i+=1
@@ -306,9 +306,9 @@ while int(user_input) != 3:
                     if int(user_choice) == 1:
                         # Logic to remove
                         for hypElement in hypMatrix:
-                            success = tenant_infra(tenant, "false", hypElement['ip'], hypElement['uname'], hypElement['pwd'])
+                            success = tenant_infra(str(tenant), "false", hypElement['ip'], hypElement['uname'], hypElement['pwd'])
                         if success:
-                            write_log("Tenant "+tenant+" : deletion in process")
+                            write_log("Tenant "+str(tenant)+" : deletion in process")
                         rem_lines = []
                         with open(databasefile, mode = 'rb') as fd:
                             line = fd.readline()
@@ -319,9 +319,9 @@ while int(user_input) != 3:
                                     vm_name = parts[3]
                                     for hypElement in hypMatrix:
                                         if hypElement['ip'] == hyp:
-                                            success = tenant_delvm(tenant, vm_name, hyp, hypElement['uname'], hypElement['pwd'])
+                                            success = tenant_delvm(vm_name, tenant, hyp, hypElement['uname'], hypElement['pwd'])
                                         if success:
-                                            write_log("Tenant: "+tenant+" VM:"+vm_name+" deleted")
+                                            write_log("Tenant: "+str(tenant)+" VM:"+vm_name+" deleted")
                                             write_log(line)
                                             rem_lines.append(line+'\n')
                                 line = fd.readline()
@@ -330,7 +330,7 @@ while int(user_input) != 3:
                             for rem_line in rem_lines:
                                 contents = contents.replace(rem_line,"")
                         with open(databasefile, mode = 'w') as fd:
-                            fd.write(contents)
+                            fd.write(contents.rstrip())
                     else:
                         continue
                 else:
@@ -353,7 +353,7 @@ while int(user_input) != 3:
                     vm_name_start = 1
                     while line:
                         parts = line.split('*')
-                        if parts[1] == str(tenantid):
+                        if parts[1] == 'T'+str(tenantid):
                             if parts[2] == subnet:
                                 new_subnet = False
                         line = fd.readline()
@@ -373,7 +373,7 @@ while int(user_input) != 3:
                             ip = int(parts[4].split('.')[3].split('/')[0])
                             if id >= vm_name_start:
                                 vm_name_start = id
-                            if ip >= vm_ip_start:
+                            if subnet == parts[2] and ip >= vm_ip_start:
                                 vm_ip_start = ip
                         line = fd.readline()
                     vm_name_start+=1
@@ -381,7 +381,7 @@ while int(user_input) != 3:
 
                 i = 0
                 for vm in range(int(vms)):
-                    if i == Nhyp-1:
+                    if i == Nhyp:
                         i = 0
                     vm_name = "T"+str(tenantid)+"_VM"+str(vm_name_start)
                     vm_ip = subnet.rsplit('.',1)[0]+'.'+str(vm_ip_start)+'/'+mask
@@ -391,7 +391,7 @@ while int(user_input) != 3:
                     if vm_mac:
                         database_line = hypMatrix[i]['ip']+"*"+"T"+str(tenantid)+"*"+subnet+"*"+vm_name+"*"+vm_ip+"*"+vm_mac+"\n"
                         write_log("Tenant "+str(tenantid)+" Subnet:"+subnet+" VM created-->VM name:"+vm_name+" VM MAC: "+vm_mac)
-                        with open(databasefile, mode='w+') as fd:
+                        with open(databasefile, mode='a+') as fd:
                             fd.write(database_line)
                     i+=1
 
@@ -399,12 +399,12 @@ while int(user_input) != 3:
                 tenantid = raw_input("Enter the tenant id: ")
                 vm_name = raw_input("Enter the VM name: ")
                 del_ch = raw_input("Do you want to save this VM image to boot later?: ")
-                write_log("VM deletion for Tenant:"+tenant+" VM:"+vm_name+" attempted")
+                write_log("VM deletion for Tenant:"+str(tenant)+" VM:"+vm_name+" attempted")
                 with open(databasefile, mode = 'rb') as fd:
                     line = fd.readline()
                     while line:
                         parts = line.split('*')
-                        if parts[1] == str(tenantid) and vm_name == parts[3]:
+                        if parts[1] == 'T'+str(tenantid) and vm_name == parts[3]:
                             rem_line = line
                             hypervisor = parts[0]
                         line = fd.readline()
@@ -422,7 +422,7 @@ while int(user_input) != 3:
                         contents = fd.read()
                         contents = contents.replace(rem_line,"")
                     with open(databasefile, mode = 'w') as fd:
-                        fd.write(contents)
+                        fd.write(contents.rstrip())
                     write_log("Tenant: "+str(tenantid)+" VM:"+vm_name+" deleted")
                     print "VM deleted successfully"
             elif int(admin_input) == 6:
