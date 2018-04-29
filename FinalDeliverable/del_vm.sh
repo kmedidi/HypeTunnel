@@ -1,7 +1,7 @@
 
 #!/bin/bash
 
-TID = $1
+TID=$1
 C_NAME=$2
 MOVE=$3
 
