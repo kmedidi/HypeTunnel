@@ -108,11 +108,22 @@ def tenant_addvm(vm_name, vm_ip, tenant, flag, hypervisor, uname, pwd):
 
 def tenant_delvm(vm_name, tenant, flag, hypervisor, uname, pwd):
     '''Function that calls del_vm.sh to delete VMs of a specific vm_name for a tenant on a hypervisor'''
-
     run_command = "sudo bash $HOME/HypeTunnel/conf/add_vm.sh "+tenant+" "+vm_name+" "+flag
     child = ssh_command(uname, hypervisor, pwd, run_command)
-    success = child.before
+    output = child.before
+    success = False
+    if output == "true":
+        success = True
     return success
+
+#*********************************************************************************************************************************************************
+
+def tenant_vm_stats(vm_name, hypervisor, uname, pwd):
+    '''Function that calls del_vm.sh to delete VMs of a specific vm_name for a tenant on a hypervisor'''
+    run_command = "sudo docker stats "+vm_name
+    child = ssh_command(uname, hypervisor, pwd, run_command)
+    output = child.before
+    return output
 
 #*********************************************************************************************************************************************************
 
@@ -136,15 +147,9 @@ def write_log(log_line):
     tstamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
     with open(logfile, mode='a+') as fl:
         fl.write("\n"+log_line+"------"+tstamp)
-    #TODO
 
 #*********************************************************************************************************************************************************
 
-def download_tenant_logs():
-    '''Function that reads the log file and creates tenant specific logs'''
-    #TODO
-
-#*********************************************************************************************************************************************************
 dir_path = os.path.dirname(os.path.realpath(__file__))
 hyplistfile = dir_path+"/hyplistfile.txt"
 databasefile = dir_path+"/databasefile.txt"
@@ -523,11 +528,31 @@ while int(user_input) != 3:
             print "3. Exit Tenant Console"
             tenant_input = raw_input("Enter your choice: ")
             if int(tenant_input) == 1:
-                # TODO: Create tenant specific database info
-                print "TODO"
+                tenantid = raw_input("Enter the tenant ID: ")
+                write_log("Database retrieved Tenant: T"+str(tenantid))
+                with open(databasefile, mode='rb') as fd:
+                    line = fd.readline()
+                    while line:
+                        parts = line.split('*')
+                        if parts[1] == 'T'+str(tenantid):
+                            print "Subnet:"+parts[2]+"   VM Name:"+parts[3]+"   VM IP:"+parts[4]+"   VM MAC:"+parts[5]
             elif int(tenant_input) == 2:
-                # TODO: Create a log file specific to tenant
-                print "TODO"
+                tenantid = raw_input("Enter the tenant ID: ")
+                hypervisors = []
+                with open(hyplistfile, mode = 'rb') as f:
+                    for line in f:
+                        hypervisors.append(line.rstrip());
+                    Nhyp = len(hypervisors)
+                    hypMatrix = [{"ip":hypervisors[x].split("*")[0],"uname":hypervisors[x].split("*")[1], "pwd":hypervisors[x].split("*")[2]} for x in range(len(hypervisors))]
+                write_log("Usage Stats retrieved Tenant: T"+str(tenantid))
+                with open(databasefile, mode='rb') as fd:
+                    line = fd.readline()
+                    while line:
+                        parts = line.split('*')
+                        if parts[1] == 'T'+str(tenantid):
+                            for hypElement in hypMatrix:
+                                if hypElement['ip'] == parts[0]:
+                                    print tenant_vm_stats(vm_name, hypElement['ip'], hypElement['uname'], hypElement['pwd'])
             elif int(tenant_input) == 3:
                 break
             else:
