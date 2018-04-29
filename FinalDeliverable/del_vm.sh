@@ -1,6 +1,6 @@
 
 #!/bin/bash
-
+##################  SHELL SCRIPT TO DELETE TENANT CONTAINERS/VMs ON THE SPECIFIED HYPERVISOR  ########################
 TID=$1
 C_NAME=$2
 MOVE=$3
@@ -13,9 +13,9 @@ then
   #Status =$(sudo docker ps -a --format "table {{.Names}}\t{{.Status}}"| grep "\<$VM_NAME\>" | gawk '{{ print $2 }}')
   if [[ $MOVE == "true" ]]
   then
-    sudo docker commit $C_NAME ${C_NAME}_Image
-    sudo docker save ${C_NAME}_Image >  $HOME/${C_NAME}_Image.tar
-    file="$HOME/${C_NAME}_Image.tar"
+    sudo docker commit $C_NAME ${C_NAME}_image
+    sudo docker save ${C_NAME}_image >  $HOME/${C_NAME}_image.tar
+    file="$HOME/${C_NAME}_image.tar"
     if [ -f $file ];then
       echo "True"
     else
