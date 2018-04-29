@@ -11,16 +11,16 @@ if [[ $State == 1 ]]
 then
   #echo "$C_NAME is present on Hypervisor"
   #Status =$(sudo docker ps -a --format "table {{.Names}}\t{{.Status}}"| grep "\<$VM_NAME\>" | gawk '{{ print $2 }}')
-  if [[ $MOVE == "True" ]]
+  if [[ $MOVE == "true" ]]
   then
     sudo docker commit $C_NAME ${C_NAME}_Image
     sudo docker save ${C_NAME}_Image >  $HOME/${C_NAME}_Image.tar
     file="$HOME/${C_NAME}_Image.tar"
     if [ -f $file ];then
-      echo "true"
+      echo "True"
     else
       ###Image tar not created###
-      echo "false"
+      echo "False"
     fi
   else
     Status=$(sudo docker inspect -f {{.State.Status}} $C_NAME)
@@ -38,13 +38,13 @@ then
     State=$(sudo docker ps -a | grep -c "<\$C_NAME\>")
     if [[ $State == 0 ]];then
       #echo "Successfully removed $C_NAME"
-      echo "true"
+      echo "True"
     else
       ###Container not removed###
-      echo "false"
+      echo "False"
     fi
   fi
 else
     #echo " Container not present! Enter the correct Container name."
-    echo "false"
+    echo "False"
 fi
