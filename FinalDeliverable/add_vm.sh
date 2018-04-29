@@ -17,13 +17,14 @@ if [[ vm_dup -eq 0 ]]
 then
   if [[ $MOVE == "true" ]]
   then
-    sudo docker load < $HOME/$1_image.tar > /dev/null
-    sudo docker run -itd --name $1 $1_image > /dev/null
+    cont=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+    sudo docker load < $HOME/${cont}_image.tar > /dev/null
+    sudo docker run -itd --name $1 ${cont}_image > /dev/null
     state=$(sudo docker ps -a | grep -c "\<$1\>")
     if [[ state -eq 1 ]]
     then
       ### Container moved successfully ###
-      rm $HOME/$1_image.tar
+      rm $HOME/${cont}_image.tar
     fi
   else
     sudo docker run -itd --name $1 ubuntu > /dev/null
