@@ -7,11 +7,18 @@ GW=$(printf "%d.%d.%d.%d\n" "$((i1 & (2#$m1)))" "$((i2 & (2#$m2)))" "$((i3 & (2#
 veth1=$(echo $2 | tr -dc '[:alnum:]')
 
 sudo ip link add ot$1_$veth1 type veth peer name t$1o_$veth1
+sudo ip link set ot$1_$veth1 up
+sudo ip link set t$1o_$veth1 up
 sudo ip link set t"$1"o_$veth1 netns T$1_NS
 sudo ovs-vsctl add-port central_ovs ot$1_$veth1 tag=$1
 
 sudo ip link set ot"$1"_$veth1 up
 sudo ip netns exec T$1_NS ip link set t"$1"o_$veth1 up
-
 sudo ip netns exec T$1_NS ip address add $GW/$PREFIX dev t"$1"o_$veth1
-sudo ip netns exec T$1_NS ip address | grep -c $GW
+flag=$(sudo ip netns exec T$1_NS ip address | grep -c $GW)
+if [ $flag -eq 1 ]
+then
+echo "True"
+else 
+echo "False"
+fi
