@@ -13,5 +13,5 @@ sudo ovs-vsctl add-port central_ovs ot$1_$veth1 tag=$1
 sudo ip link set ot"$1"_$veth1 up
 sudo ip netns exec T$1_NS ip link set t"$1"o_$veth1 up
 
-sudo ip netns exec T$1_NS ip address add $GW dev t"$1"o_$veth1
+sudo ip netns exec T$1_NS ip address add $GW/$PREFIX dev t"$1"o_$veth1
 sudo ip netns exec T$1_NS ip address | grep -c $GW
