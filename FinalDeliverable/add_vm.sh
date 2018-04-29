@@ -9,16 +9,28 @@ IFS=. read -r xx m1 m2 m3 m4 <<< $(for a in $(seq 1 32); do if [ $(((a - 1) % 8)
 GW=$(printf "%d.%d.%d.%d\n" "$((i1 & (2#$m1)))" "$((i2 & (2#$m2)))" "$((i3 & (2#$m3)))" "$((((i4 & (2#$m4)))+1))")
 
 #-----------------------------------------------------------------------
-
+MOVE=$4
 #Create container if it doesn't exist
 
-vm_dup=$(sudo docker ps -a | grep -c $1)
+vm_dup=$(sudo docker ps -a | grep -c "\<$1\>")
 if [[ vm_dup -eq 0 ]]
 then
-  sudo docker run -itd --name $1 ubuntu > /dev/null
-  sudo docker exec $1 apt-get update > /dev/null
-  sudo docker exec $1 apt-get install -y iputils-ping > /dev/null
-  sudo docker exec $1 apt-get install -y iproute2 > /dev/null
+  if [[ $MOVE == "true" ]]
+  then
+    sudo docker load < $HOME/$1_image.tar > /dev/null
+    sudo docker run -itd --name $1 $1_image > /dev/null
+    state=$(sudo docker ps -a | grep -c "\<$1\>")
+    if [[ state -eq 1 ]]
+    then
+      ### Container moved successfully ###
+      rm $HOME/$1_image.tar
+    fi
+  else
+    sudo docker run -itd --name $1 ubuntu > /dev/null
+    sudo docker exec $1 apt-get update > /dev/null
+    sudo docker exec $1 apt-get install -y iputils-ping > /dev/null
+    sudo docker exec $1 apt-get install -y iproute2 > /dev/null
+  fi
   #Create veth pair and attach it to the central_ovs and container
   sudo ip link add $1_0 type veth peer name $1_1
   sudo ip link set $1_0 up
