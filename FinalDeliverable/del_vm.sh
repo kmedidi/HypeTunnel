@@ -52,6 +52,7 @@ then
     fi
     #echo "Removing $C_NAME...."
     sudo docker rm $C_NAME > /dev/null
+    sudo ovs-vsctl del-port central_ovs ${C_NAME}_0
     State=$(sudo docker ps -a | grep -c "<\$C_NAME\>")
     if [[ $State == 0 ]]
     then
