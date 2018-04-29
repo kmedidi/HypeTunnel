@@ -101,7 +101,9 @@ def tenant_addvm(vm_name, vm_ip, tenant, flag, hypervisor, uname, pwd):
     run_command = "sudo bash $HOME/HypeTunnel/conf/add_vm.sh "+vm_name+" "+vm_ip+" "+tenant+" "+flag
     child = ssh_command(uname, hypervisor, pwd, run_command)
     child.expect(pexpect.EOF)
-    vm_mac = child.before
+    output = child.before
+    output = output.rstrip()
+    vm_mac = output 
     return vm_mac
 
 #*********************************************************************************************************************************************************
@@ -112,7 +114,7 @@ def tenant_delvm(vm_name, tenant, flag, hypervisor, uname, pwd):
     child = ssh_command(uname, hypervisor, pwd, run_command)
     output = child.before
     success = False
-    if output == "true":
+    if output == "True":
         success = True
     return success
 
