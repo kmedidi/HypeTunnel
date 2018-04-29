@@ -77,7 +77,6 @@ def tenant_infra(tenant, flag, hypervisor, uname, pwd):
     child = ssh_command(uname,hypervisor,pwd,run_command)
     child.expect(pexpect.EOF)
     output = child.before
-    success = False
     if  output.find('True') != -1:
         success = True
     return success
@@ -91,7 +90,6 @@ def tenant_addsubnet(subnet, tenant, hypervisor, uname, pwd):
     child = ssh_command(uname,hypervisor,pwd,run_command)
     child.expect(pexpect.EOF)
     output = child.before
-    success = False
     if output.find('True') != -1:
         success = True
     return success
