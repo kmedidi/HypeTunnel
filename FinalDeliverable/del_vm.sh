@@ -40,7 +40,7 @@ then
     fi
     #echo "Removing $C_NAME...."
     sudo docker rm $C_NAME
-    State=$(sudo docker ps -a | grep -c "<\$C_NAME\>")
+    State=$(sudo docker ps -a | grep -c "\<$C_NAME\>")
     if [[ $State == 0 ]];then
       #echo "Successfully removed $C_NAME"
       echo "True"

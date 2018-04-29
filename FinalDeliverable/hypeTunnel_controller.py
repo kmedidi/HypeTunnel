@@ -112,6 +112,7 @@ def tenant_delvm(vm_name, tenant, flag, hypervisor, uname, pwd):
     '''Function that calls del_vm.sh to delete VMs of a specific vm_name for a tenant on a hypervisor'''
     run_command = "sudo bash $HOME/del_vm.sh "+tenant+" "+vm_name+" "+flag
     child = ssh_command(uname, hypervisor, pwd, run_command)
+    child.expect(pexpect.EOF)
     output = child.before
     success = False
     if output == "True":
@@ -271,11 +272,9 @@ while int(user_input) != 3:
                                         while line:
                                             parts = line.split('*')
                                             tag = int(parts[3])
-                                            if tag == new_tag:
-                                                new_tag = tag
+                                            if tag >= new_tag:
+                                                new_tag = tag+1
                                             line = fd.readline()
-                                        if new_tag != 1:
-                                            new_tag+=1
                                     print "Subnet " + subnet + " doesn't exist. Creating it..."
                                     for hypElement in hypMatrix:
                                         success = tenant_addsubnet(subnet, str(tenantid), str(new_tag), hypElement['ip'], hypElement['uname'], hypElement['pwd'])
@@ -399,11 +398,9 @@ while int(user_input) != 3:
                         while line:
                             parts = line.split('*')
                             tag = int(parts[3])
-                            if tag == new_tag:
-                                new_tag = tag
+                            if tag >= new_tag:
+                                new_tag = tag+1
                             line = fd.readline()
-                        if new_tag != 1:
-                            new_tag+=1
                     print "Subnet " + subnet + " doesn't exist. Creating it..."
                     for hypElement in hypMatrix:
                         success = tenant_addsubnet(subnet, str(tenantid), str(new_tag), hypElement['ip'], hypElement['uname'], hypElement['pwd'])
@@ -494,10 +491,12 @@ while int(user_input) != 3:
                     line = fd.readline()
                     while line:
                         parts = line.split('*')
-                        if parts[1] == 'T'+str(tenantid) and vm_name == parts[4]:
+                        if vm_name == parts[4]:
+                            tenantid = int(filter(str.isdigit, parts[1]))
                             tag = parts[3]
                             vm_ip = parts[5]
                             hypSource = parts[0]
+                            rem_line = line
                         line = fd.readline()
                 hypervisors = []
                 with open(hyplistfile, mode = 'rb') as f:
@@ -518,8 +517,10 @@ while int(user_input) != 3:
                     for hypElement in hypMatrix:
                         if hypElement['ip'] == hypDestination:
                             hypDestination_uname = hypElement['uname']
-                            scp_command = "scp "+hypSource_uname+"@"+hypSource+":$HOME/"+vm_name+"_image.tar "+hypDestination_uname+"@"+hypDestination+":$HOME/"+vm_name+"_image.tar"
-                            ssh_command(hypSource_uname, hypSource, hypSource_pwd, scp_command)
+                            scp_command = "scp -i $HOME/.ssh/proj_key $HOME/"+vm_name+"_image.tar "+hypDestination_uname+"@"+hypDestination+":$HOME/"+vm_name+"_image.tar"
+                            child = ssh_command(hypSource_uname, hypSource, hypSource_pwd, scp_command)
+                            child.expect(pexpect.EOF)
+                            output = child.before
                             vm_mac = tenant_addvm(vm_name, vm_ip, str(tag), "true", hypDestination, hypElement['uname'], hypElement['pwd'])
                     if vm_mac:
                         for hypElement in hypMatrix:
@@ -530,11 +531,10 @@ while int(user_input) != 3:
                             with open(databasefile) as fd:
                             	contents = fd.readlines()
                             	for content in contents:
-                                        for rem_line in rem_lines:
-                                            if rem_line != content.strip():
-                                                print "rem_line:"+rem_line
-                                                print "rem_line"+content
-                                                new_contents.append(content)
+                                    if rem_line != content.strip():
+                                        print "rem_line:"+rem_line
+                                        print "rem_line"+content
+                                        new_contents.append(content)
                             with open(databasefile, mode = 'w') as fd:
                                 fd.writelines(new_contents)
                             database_line = hypMatrix[i]['ip']+"*"+"T"+str(tenantid)+"*"+subnet+"*"+str(tag)+"*"+vm_name+"*"+vm_ip+"*"+vm_mac+"\n"
