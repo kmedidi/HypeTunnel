@@ -123,8 +123,9 @@ def tenant_delvm(vm_name, tenant, flag, hypervisor, uname, pwd):
 
 def tenant_vm_stats(vm_name, hypervisor, uname, pwd):
     '''Function that calls del_vm.sh to delete VMs of a specific vm_name for a tenant on a hypervisor'''
-    run_command = "sudo docker stats "+vm_name
+    run_command = "sudo docker stats --no-stream=true "+vm_name
     child = ssh_command(uname, hypervisor, pwd, run_command)
+    child.expect(pexpect.EOF)
     output = child.before
     return output
 
@@ -203,8 +204,7 @@ while int(user_input) != 3:
             admin_input = raw_input("Enter your choice: ")
             if int(admin_input) == 1:
                 write_log("Database Info retrieved")
-                # TODO: Call database_info()
-                print "Database info"
+                database_info(databasefile)
             elif int(admin_input) == 2:
                 write_log("Create HypeTunnel infrastructure called")
                 hypervisors = []
@@ -493,6 +493,7 @@ while int(user_input) != 3:
                         parts = line.split('*')
                         if vm_name == parts[4]:
                             tenantid = int(filter(str.isdigit, parts[1]))
+                            subnet = parts[2]
                             tag = parts[3]
                             vm_ip = parts[5]
                             hypSource = parts[0]
@@ -565,6 +566,7 @@ while int(user_input) != 3:
                         parts = line.split('*')
                         if parts[1] == 'T'+str(tenantid):
                             print "Subnet:"+parts[2]+"   VM Name:"+parts[4]+"   VM IP:"+parts[5]+"   VM MAC:"+parts[6]
+                        line = fd.readline()
             elif int(tenant_input) == 2:
                 tenantid = raw_input("Enter the tenant ID: ")
                 hypervisors = []
@@ -582,6 +584,7 @@ while int(user_input) != 3:
                             for hypElement in hypMatrix:
                                 if hypElement['ip'] == parts[0]:
                                     print tenant_vm_stats(vm_name, hypElement['ip'], hypElement['uname'], hypElement['pwd'])
+                        line = fd.readline()
             elif int(tenant_input) == 3:
                 break
             else:
