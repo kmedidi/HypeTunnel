@@ -55,10 +55,10 @@ def infra(hypervisors):
         run_command = "bash $HOME/infra.sh " + hypMatrix[i]['ip'] + " " + remote_ip_list
         child = ssh_command(hypMatrix[i]['uname'],hypMatrix[i]['ip'],hypMatrix[i]['pwd'],run_command)
         child.expect(pexpect.EOF)
-        os.system("sudo scp ./tenant_infra.sh "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/HypeTunnel/conf/tenant_infra.sh")
-        os.system("sudo scp ./add_subnet.sh "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/HypeTunnel/conf/add_subnet.sh")
-        os.system("sudo scp ./add_vm.sh "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/HypeTunnel/conf/add_vm.sh")
-        os.system("sudo scp ./del_vm.sh "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/HypeTunnel/conf/del_vm.sh")
+        os.system("sudo scp ./tenant_infra.sh "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/tenant_infra.sh")
+        os.system("sudo scp ./add_subnet.sh "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/add_subnet.sh")
+        os.system("sudo scp ./add_vm.sh "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/add_vm.sh")
+        os.system("sudo scp ./del_vm.sh "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/del_vm.sh")
         for ver_command in ver_commands:
             child = ssh_command(hypMatrix[i]['uname'],hypMatrix[i]['ip'],hypMatrix[i]['pwd'],ver_command)
             child.expect(pexpect.EOF)
@@ -73,7 +73,7 @@ def infra(hypervisors):
 def tenant_infra(tenant, flag, hypervisor, uname, pwd):
     '''Function that calls tenant_infra.sh to create the infra per hypervisor'''
     success = False
-    run_command = "sudo bash $HOME/HypeTunnel/conf/tenant_infra.sh "+tenant+" "+flag
+    run_command = "sudo bash $HOME/tenant_infra.sh "+tenant+" "+flag
     child = ssh_command(uname,hypervisor,pwd,run_command)
     child.expect(pexpect.EOF)
     output = child.before
@@ -86,7 +86,7 @@ def tenant_infra(tenant, flag, hypervisor, uname, pwd):
 def tenant_addsubnet(subnet, tenant, tag, hypervisor, uname, pwd):
     '''Function to a subnet for a tenant in all hypervisors'''
     success = False
-    run_command = "sudo bash $HOME/HypeTunnel/conf/add_subnet.sh "+tenant+" "+subnet+" "+tag
+    run_command = "sudo bash $HOME/add_subnet.sh "+tenant+" "+subnet+" "+tag
     child = ssh_command(uname,hypervisor,pwd,run_command)
     child.expect(pexpect.EOF)
     output = child.before
@@ -96,9 +96,9 @@ def tenant_addsubnet(subnet, tenant, tag, hypervisor, uname, pwd):
 
 #*********************************************************************************************************************************************************
 
-def tenant_addvm(vm_name, vm_ip, tenant, flag, hypervisor, uname, pwd):
+def tenant_addvm(vm_name, vm_ip, tag, flag, hypervisor, uname, pwd):
     '''Function that calls add_vm.sh to create VMs in a specific subnet for a tenant on a hypervisor'''
-    run_command = "sudo bash $HOME/HypeTunnel/conf/add_vm.sh "+vm_name+" "+vm_ip+" "+tenant+" "+flag
+    run_command = "sudo bash $HOME/add_vm.sh "+vm_name+" "+vm_ip+" "+tag+" "+flag
     child = ssh_command(uname, hypervisor, pwd, run_command)
     child.expect(pexpect.EOF)
     output = child.before
@@ -110,7 +110,7 @@ def tenant_addvm(vm_name, vm_ip, tenant, flag, hypervisor, uname, pwd):
 
 def tenant_delvm(vm_name, tenant, flag, hypervisor, uname, pwd):
     '''Function that calls del_vm.sh to delete VMs of a specific vm_name for a tenant on a hypervisor'''
-    run_command = "sudo bash $HOME/HypeTunnel/conf/add_vm.sh "+tenant+" "+vm_name+" "+flag
+    run_command = "sudo bash $HOME/del_vm.sh "+tenant+" "+vm_name+" "+flag
     child = ssh_command(uname, hypervisor, pwd, run_command)
     output = child.before
     success = False
@@ -302,6 +302,7 @@ while int(user_input) != 3:
                                                 if id >= vm_name_start:
                                                     vm_name_start = id
                                                 if subnet == parts[2] and ip >= vm_ip_start:
+                                                    new_tag = parts[3]
                                                     vm_ip_start = ip
                                             line = fd.readline()
                                         vm_name_start+=1
@@ -315,9 +316,9 @@ while int(user_input) != 3:
                                         vm_ip = subnet.rsplit('.',1)[0]+'.'+str(vm_ip_start)+'/'+mask
                                         vm_name_start+=1
                                         vm_ip_start+=1
-                                        vm_mac = tenant_addvm(vm_name, vm_ip, str(tenantid), "false", hypMatrix[i]['ip'], hypMatrix[i]['uname'], hypMatrix[i]['pwd'])
+                                        vm_mac = tenant_addvm(vm_name, vm_ip, str(new_tag), "false", hypMatrix[i]['ip'], hypMatrix[i]['uname'], hypMatrix[i]['pwd'])
                                         if vm_mac:
-                                            database_line = hypMatrix[i]['ip']+"*"+"T"+str(tenantid)+"*"+subnet+"*"+vm_name+"*"+vm_ip+"*"+vm_mac+"\n"
+                                            database_line = hypMatrix[i]['ip']+"*"+"T"+str(tenantid)+"*"+subnet+"*"+str(new_tag)+"*"+vm_name+"*"+vm_ip+"*"+vm_mac+"\n"
                                             with open(databasefile, mode='a+') as fd:
                                                 fd.write(database_line)
                                             write_log("Tenant "+str(tenantid)+" Subnet:"+subnet+" VM created-->VM name:"+vm_name+" VM MAC: "+vm_mac)
@@ -427,6 +428,7 @@ while int(user_input) != 3:
                             if id >= vm_name_start:
                                 vm_name_start = id
                             if subnet == parts[2] and ip >= vm_ip_start:
+                                new_tag = parts[3]
                                 vm_ip_start = ip
                         line = fd.readline()
                     vm_name_start+=1
@@ -440,9 +442,9 @@ while int(user_input) != 3:
                     vm_ip = subnet.rsplit('.',1)[0]+'.'+str(vm_ip_start)+'/'+mask
                     vm_name_start+=1
                     vm_ip_start+=1
-                    vm_mac = tenant_addvm(vm_name, vm_ip, str(tenantid), "false", hypMatrix[i]['ip'], hypMatrix[i]['uname'], hypMatrix[i]['pwd'])
+                    vm_mac = tenant_addvm(vm_name, vm_ip, str(new_tag), "false", hypMatrix[i]['ip'], hypMatrix[i]['uname'], hypMatrix[i]['pwd'])
                     if vm_mac:
-                        database_line = hypMatrix[i]['ip']+"*"+"T"+str(tenantid)+"*"+subnet+"*"+vm_name+"*"+vm_ip+"*"+vm_mac+"\n"
+                        database_line = hypMatrix[i]['ip']+"*"+"T"+str(tenantid)+"*"+subnet+"*"+str(new_tag)+"*"+vm_name+"*"+vm_ip+"*"+vm_mac+"\n"
                         write_log("Tenant "+str(tenantid)+" Subnet:"+subnet+" VM created-->VM name:"+vm_name+" VM MAC: "+vm_mac)
                         with open(databasefile, mode='a+') as fd:
                             fd.write(database_line)
@@ -493,6 +495,7 @@ while int(user_input) != 3:
                     while line:
                         parts = line.split('*')
                         if parts[1] == 'T'+str(tenantid) and vm_name == parts[4]:
+                            tag = parts[3]
                             vm_ip = parts[5]
                             hypSource = parts[0]
                         line = fd.readline()
@@ -517,7 +520,7 @@ while int(user_input) != 3:
                             hypDestination_uname = hypElement['uname']
                             scp_command = "scp "+hypSource_uname+"@"+hypSource+":$HOME/"+vm_name+"_image.tar "+hypDestination_uname+"@"+hypDestination+":$HOME/"+vm_name+"_image.tar"
                             ssh_command(hypSource_uname, hypSource, hypSource_pwd, scp_command)
-                            vm_mac = tenant_addvm(vm_name, vm_ip, str(tenantid), "true", hypDestination, hypElement['uname'], hypElement['pwd'])
+                            vm_mac = tenant_addvm(vm_name, vm_ip, str(tag), "true", hypDestination, hypElement['uname'], hypElement['pwd'])
                     if vm_mac:
                         for hypElement in hypMatrix:
                             if hypElement['ip'] == hypSource:
@@ -534,7 +537,7 @@ while int(user_input) != 3:
                                                 new_contents.append(content)
                             with open(databasefile, mode = 'w') as fd:
                                 fd.writelines(new_contents)
-                            database_line = hypMatrix[i]['ip']+"*"+"T"+str(tenantid)+"*"+subnet+"*"+vm_name+"*"+vm_ip+"*"+vm_mac+"\n"
+                            database_line = hypMatrix[i]['ip']+"*"+"T"+str(tenantid)+"*"+subnet+"*"+str(tag)+"*"+vm_name+"*"+vm_ip+"*"+vm_mac+"\n"
                             with open(databasefile, mode='a+') as fd:
                                 fd.write(database_line)
                             write_log("Tenant "+str(tenantid)+" Subnet:"+subnet+" VM moved-->VM name:"+vm_name+" VM MAC: "+vm_mac)

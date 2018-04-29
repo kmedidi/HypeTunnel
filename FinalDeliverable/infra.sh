@@ -1,11 +1,10 @@
 #!/bin/bash
 #Create directories $HOME/HypeTunnel, $HOME/HypeTunnel/conf, $HOME/HypeTunnel/logs
 sudo mkdir -p -- $HOME/HypeTunnel/conf
-sudo mkdir -p -- $HOME/HypeTunnel/logs
+sudo chmod 777 $HOME/HypeTunnel/conf
 
 # Create files $HOME/HypeTunnel/conf/flows.txt, $HOME/HypeTunnel/logs/logs.txt
 sudo touch -a $HOME/HypeTunnel/conf/flows.txt
-sudo touch -a $HOME/HypeTunnel/logs/logs.txt
 
 # Create central_ovs if absent
 cpresent=$(sudo ovs-vsctl show | grep -cw central_ovs)
@@ -52,7 +51,7 @@ do
       gre_int=$(($i+31))
       ovs-vsctl add-port tunnel_ovs vxlan_$vxlan_int_name -- set Interface vxlan_$i ofport_request=$vxlan_int type=vxlan options:local_ip=$my_ip options:remote_ip=$var
       ovs-vsctl add-port tunnel_ovs gre_$gre_int_name -- set Interface gre_$i ofport_request=$gre_int type=gre options:remote_ip=$var
-      if ! [[ $i -eq "" ]]
+      if ! [[ $vxlan_ints -eq "" ]]
       then
         vxlan_ints=$vxlan_ints","$vxlan_int
       else
