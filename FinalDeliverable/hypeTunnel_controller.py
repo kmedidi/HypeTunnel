@@ -58,7 +58,7 @@ def infra(hypervisors):
         os.system("sudo scp ./tenant_infra.sh "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/HypeTunnel/conf/tenant_infra.sh")
         os.system("sudo scp ./add_subnet.sh "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/HypeTunnel/conf/add_subnet.sh")
         os.system("sudo scp ./add_vm.sh "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/HypeTunnel/conf/add_vm.sh")
-        os.system("sudo scp ./del_vm.sh "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/HypeTunnel/conf/del_vm.sh")  
+        os.system("sudo scp ./del_vm.sh "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/HypeTunnel/conf/del_vm.sh")
         for ver_command in ver_commands:
             child = ssh_command(hypMatrix[i]['uname'],hypMatrix[i]['ip'],hypMatrix[i]['pwd'],ver_command)
             child.expect(pexpect.EOF)
@@ -190,7 +190,8 @@ while int(user_input) != 3:
             print "3. Add/Remove a tenant"
             print "4. Add VM on a new or existing subnet for a tenant"
             print "5. Remove VM from existing subnet for a tenant"
-            print "6. Exit Admin Console"
+            print "6. Move a VM from one hypervisor to the other"
+            print "7. Exit Admin Console"
             admin_input = raw_input("Enter your choice: ")
             if int(admin_input) == 1:
                 write_log("Database Info retrieved")
@@ -262,7 +263,11 @@ while int(user_input) != 3:
                                         success = tenant_addsubnet(subnet, str(tenantid), hypElement['ip'], hypElement['uname'], hypElement['pwd'])
                                         if success == False:
                                             break
-                                    if success:
+                                    if not(success):
+                                        print "Tenant T"+str(tenantid)+" : Subnet creation FAILED:"+subnet
+                                        write_log("Tenant "+str(tenantid)+" : Subnet creation FAILED:"+subnet)
+                                        continue
+                                    else:
                                         write_log("Tenant "+str(tenantid)+" : Subnet created:"+subnet)
                                 vms = raw_input("Enter the number of VMs: ")
                                 if int(vms) > 0:
@@ -372,7 +377,15 @@ while int(user_input) != 3:
                 if new_subnet:
                     print "Subnet " + subnet + " doesn't exist. Creating it..."
                     for hypElement in hypMatrix:
-                        tenant_addsubnet(subnet, str(tenantid), hypElement['ip'], hypElement['uname'], hypElement['pwd'])
+                        success = tenant_addsubnet(subnet, str(tenantid), hypElement['ip'], hypElement['uname'], hypElement['pwd'])
+                        if success == False:
+                            break
+                        if not(success):
+                            print "Tenant T"+str(tenantid)+" : Subnet creation FAILED:"+subnet
+                            write_log("Tenant T"+str(tenantid)+" : Subnet creation FAILED:"+subnet)
+                            continue
+                        else:
+                            write_log("Tenant "+str(tenantid)+" : Subnet created:"+subnet)
                 vms = raw_input("Enter the number of additional VMs:")
                 with open(databasefile, mode = 'rb') as fd:
                     line = fd.readline()
@@ -446,6 +459,55 @@ while int(user_input) != 3:
                     write_log("Tenant: "+str(tenantid)+" VM:"+vm_name+" deleted")
                     print "VM deleted successfully"
             elif int(admin_input) == 6:
+                vm_name = raw_input("Enter the name of the VM you want to move:")
+                hypDestination = raw_input("Enter the final destination of this VM:")
+                with open(databasefile, mode = 'rb') as fd:
+                    line = fd.readline()
+                    while line:
+                        parts = line.split('*')
+                        if parts[1] == 'T'+str(tenantid) and vm_name == parts[3]:
+                            vm_ip = parts[4]
+                            hypSource = parts[0]
+                        line = fd.readline()
+                hypervisors = []
+                with open(hyplistfile, mode = 'rb') as f:
+                    for line in f:
+                        hypervisors.append(line.rstrip());
+                    Nhyp = len(hypervisors)
+                    hypMatrix = [{"ip":hypervisors[x].split("*")[0],"uname":hypervisors[x].split("*")[1], "pwd":hypervisors[x].split("*")[2]} for x in range(len(hypervisors))]
+                for hypElement in hypMatrix:
+                    if hypElement['ip'] == hypSource:
+                        success = tenant_delvm(vm_name, str(tenantid), "true", hypSource, hypElement['uname'], hypElement['pwd'])
+                if success:
+                    write_log("Tenant: "+str(tenantid)+" VM:"+vm_name+" saved")
+                    print "VM successfully saved"
+
+                vm_ip = subnet.rsplit('.',1)[0]+'.'+str(vm_ip_start)+'/'+mask
+                for hypElement in hypMatrix:
+                    if hypElement['ip'] == hypSource:
+                        vm_mac = tenant_addvm(vm_name, vm_ip, str(tenantid), "true", hypMatrix[i]['ip'], hypMatrix[i]['uname'], hypMatrix[i]['pwd'])
+                if vm_mac:
+                    for hypElement in hypMatrix:
+                        if hypElement['ip'] == hypSource:
+                            success = tenant_delvm(vm_name, str(tenantid), "true", hypSource, hypElement['uname'], hypElement['pwd'])
+                    if success:
+                        new_contents = []
+                        with open(databasefile) as fd:
+                        	contents = fd.readlines()
+                        	for content in contents:
+                                    for rem_line in rem_lines:
+                                        if rem_line != content.strip():
+                                            print "rem_line:"+rem_line
+                                            print "rem_line"+content
+                                            new_contents.append(content)
+                        with open(databasefile, mode = 'w') as fd:
+                            '''contents = filter(lambda x: x.strip(), contents)'''
+                            fd.writelines(new_contents)
+                        database_line = hypMatrix[i]['ip']+"*"+"T"+str(tenantid)+"*"+subnet+"*"+vm_name+"*"+vm_ip+"*"+vm_mac+"\n"
+                        with open(databasefile, mode='a+') as fd:
+                            fd.write(database_line)
+                        write_log("Tenant "+str(tenantid)+" Subnet:"+subnet+" VM moved-->VM name:"+vm_name+" VM MAC: "+vm_mac)
+            elif int(admin_input) == 7:
                 break
             else:
                 print "Wrong input"
@@ -457,7 +519,7 @@ while int(user_input) != 3:
             print "H Y P E R V I S O R  O V E R L A Y  N E T W O R K  --  h y p e T u n n e l  --  T E N A N T  C O N S O L E"
             print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
             print "1. Database info"
-            print "2. Download log files"
+            print "2. Get usage info of all your VMs"
             print "3. Exit Tenant Console"
             tenant_input = raw_input("Enter your choice: ")
             if int(tenant_input) == 1:
