@@ -12,13 +12,19 @@ GW=$(printf "%d.%d.%d.%d\n" "$((i1 & (2#$m1)))" "$((i2 & (2#$m2)))" "$((i3 & (2#
 MOVE=$4
 #Create container if it doesn't exist
 
-vm_dup=$(sudo docker ps -a | grep -c $1)
+vm_dup=$(sudo docker ps -a | grep -c "\<$1\>")
 if [[ vm_dup -eq 0 ]]
 then
   if [[ $MOVE == "true" ]]
   then
     sudo docker load < $HOME/$1_image.tar > /dev/null
     sudo docker run -itd --name $1 $1_image > /dev/null
+    state=$(sudo docker ps -a | grep -c "\<$1\>")
+    if [[ state -eq 1 ]]
+    then
+      ### Container moved successfully ###
+      rm $HOME/$1_image.tar
+    fi
   else
     sudo docker run -itd --name $1 ubuntu > /dev/null
     sudo docker exec $1 apt-get update > /dev/null
