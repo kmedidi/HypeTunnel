@@ -103,7 +103,7 @@ def tenant_addvm(vm_name, vm_ip, tenant, flag, hypervisor, uname, pwd):
     child.expect(pexpect.EOF)
     output = child.before
     output = output.rstrip()
-    vm_mac = output 
+    vm_mac = output[-17:]
     return vm_mac
 
 #*********************************************************************************************************************************************************
