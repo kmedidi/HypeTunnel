@@ -22,3 +22,6 @@ echo "True"
 else
 echo "False"
 fi
+
+sudo ovs-ofctl add-flow tunnel_ovs table=0,in_port=30,arp,nw_dst=$GW,actions=drop
+sudo ovs-ofctl add-flow tunnel_ovs table=0,in_port=30,ip,nw_dst=$GW,actions=drop
