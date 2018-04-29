@@ -33,6 +33,11 @@ then
       sudo docker unpause $C_NAME
       sudo docker stop $C_NAME
     fi
+    #removing any moved container images
+    file="$HOME/${C_NAME}_image.tar"
+    if [ -f $file ];then
+      rm $file
+    fi
     #echo "Removing $C_NAME...."
     sudo docker rm $C_NAME
     State=$(sudo docker ps -a | grep -c "<\$C_NAME\>")
