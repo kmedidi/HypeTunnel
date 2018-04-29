@@ -10,7 +10,7 @@ sudo ip link add ot$1_$veth1 type veth peer name t$1o_$veth1
 sudo ip link set ot$1_$veth1 up
 sudo ip link set t$1o_$veth1 up
 sudo ip link set t"$1"o_$veth1 netns T$1_NS
-sudo ovs-vsctl add-port central_ovs ot$1_$veth1 tag=$1
+sudo ovs-vsctl add-port central_ovs ot$1_$veth1 tag=$3
 
 sudo ip link set ot"$1"_$veth1 up
 sudo ip netns exec T$1_NS ip link set t"$1"o_$veth1 up
@@ -19,6 +19,6 @@ flag=$(sudo ip netns exec T$1_NS ip address | grep -c $GW)
 if [ $flag -eq 1 ]
 then
 echo "True"
-else 
+else
 echo "False"
 fi

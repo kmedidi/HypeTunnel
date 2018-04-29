@@ -83,10 +83,10 @@ def tenant_infra(tenant, flag, hypervisor, uname, pwd):
 
 #*********************************************************************************************************************************************************
 
-def tenant_addsubnet(subnet, tenant, hypervisor, uname, pwd):
+def tenant_addsubnet(subnet, tenant, tag, hypervisor, uname, pwd):
     '''Function to a subnet for a tenant in all hypervisors'''
     success = False
-    run_command = "sudo bash $HOME/HypeTunnel/conf/add_subnet.sh "+tenant+" "+subnet
+    run_command = "sudo bash $HOME/HypeTunnel/conf/add_subnet.sh "+tenant+" "+subnet+" "+tag
     child = ssh_command(uname,hypervisor,pwd,run_command)
     child.expect(pexpect.EOF)
     output = child.before
@@ -132,12 +132,12 @@ def tenant_vm_stats(vm_name, hypervisor, uname, pwd):
 def database_info(databasefile):
     '''Function that displays the database file after a password verification'''
     print "****************************************************************************************************************************"
-    print "---HYPERVISOR----TENANT-----SUBNET-------------VM_NAME-----------VM_IP---------------VM_MAC------  "
+    print "---HYPERVISOR----TENANT-----SUBNET-------------TAG------VM_NAME-----------VM_IP---------------VM_MAC------  "
     with open(databasefile, mode='rb') as fd:
         line = fd.readline()
         while line:
             parts = line.split('*')
-            print parts[0]+"  "+parts[1]+"      "+parts[2]+"       "+parts[3]+"        "+parts[4]+"     "+parts[5]+" "
+            print parts[0]+"  "+parts[1]+"      "+parts[2]+"       "+parts[3]+"        "+parts[4]+"     "+parts[5]+" "+parts[6]
             line = fd.readline()
     print "****************************************************************************************************************************"
 
@@ -265,9 +265,20 @@ while int(user_input) != 3:
                                                 new_subnet = False
                                         line = fd.readline()
                                 if new_subnet:
+                                    with open(databasefile, mode = 'rb') as fd:
+                                        line = fd.readline()
+                                        new_tag = 1
+                                        while line:
+                                            parts = line.split('*')
+                                            tag = int(parts[3])
+                                            if tag == new_tag:
+                                                new_tag = tag
+                                            line = fd.readline()
+                                        if new_tag != 1:
+                                            new_tag+=1
                                     print "Subnet " + subnet + " doesn't exist. Creating it..."
                                     for hypElement in hypMatrix:
-                                        success = tenant_addsubnet(subnet, str(tenantid), hypElement['ip'], hypElement['uname'], hypElement['pwd'])
+                                        success = tenant_addsubnet(subnet, str(tenantid), str(new_tag), hypElement['ip'], hypElement['uname'], hypElement['pwd'])
                                         if success == False:
                                             break
                                     if not(success):
@@ -286,8 +297,8 @@ while int(user_input) != 3:
                                         while line:
                                             parts = line.split('*')
                                             if parts[1] == "T"+str(tenantid):
-                                                id = int(parts[3].split('M')[1])
-                                                ip = int(parts[4].split('.')[3].split('/')[0])
+                                                id = int(parts[4].split('M')[1])
+                                                ip = int(parts[5].split('.')[3].split('/')[0])
                                                 if id >= vm_name_start:
                                                     vm_name_start = id
                                                 if subnet == parts[2] and ip >= vm_ip_start:
@@ -333,7 +344,7 @@ while int(user_input) != 3:
                                 if line.find('T'+str(tenant)):
                                     parts = line.split('*')
                                     hyp = parts[0]
-                                    vm_name = parts[3]
+                                    vm_name = parts[4]
                                     for hypElement in hypMatrix:
                                         if hypElement['ip'] == hyp:
                                             success = tenant_delvm(vm_name, str(tenant),"false", hyp, hypElement['uname'], hypElement['pwd'])
@@ -381,9 +392,20 @@ while int(user_input) != 3:
                                 new_subnet = False
                         line = fd.readline()
                 if new_subnet:
+                    with open(databasefile, mode = 'rb') as fd:
+                        line = fd.readline()
+                        new_tag = 1
+                        while line:
+                            parts = line.split('*')
+                            tag = int(parts[3])
+                            if tag == new_tag:
+                                new_tag = tag
+                            line = fd.readline()
+                        if new_tag != 1:
+                            new_tag+=1
                     print "Subnet " + subnet + " doesn't exist. Creating it..."
                     for hypElement in hypMatrix:
-                        success = tenant_addsubnet(subnet, str(tenantid), hypElement['ip'], hypElement['uname'], hypElement['pwd'])
+                        success = tenant_addsubnet(subnet, str(tenantid), str(new_tag), hypElement['ip'], hypElement['uname'], hypElement['pwd'])
                         if success == False:
                             break
                         if not(success):
@@ -400,8 +422,8 @@ while int(user_input) != 3:
                     while line:
                         parts = line.split('*')
                         if parts[1] == str(tenantid):
-                            id = int(parts[3].split('M')[1])
-                            ip = int(parts[4].split('.')[3].split('/')[0])
+                            id = int(parts[4].split('M')[1])
+                            ip = int(parts[5].split('.')[3].split('/')[0])
                             if id >= vm_name_start:
                                 vm_name_start = id
                             if subnet == parts[2] and ip >= vm_ip_start:
@@ -435,7 +457,7 @@ while int(user_input) != 3:
                     line = fd.readline()
                     while line:
                         parts = line.split('*')
-                        if parts[1] == 'T'+str(tenantid) and vm_name == parts[3]:
+                        if parts[1] == 'T'+str(tenantid) and vm_name == parts[4]:
                             rem_line = line
                             hypervisor = parts[0]
                         line = fd.readline()
@@ -470,8 +492,8 @@ while int(user_input) != 3:
                     line = fd.readline()
                     while line:
                         parts = line.split('*')
-                        if parts[1] == 'T'+str(tenantid) and vm_name == parts[3]:
-                            vm_ip = parts[4]
+                        if parts[1] == 'T'+str(tenantid) and vm_name == parts[4]:
+                            vm_ip = parts[5]
                             hypSource = parts[0]
                         line = fd.readline()
                 hypervisors = []
@@ -539,7 +561,7 @@ while int(user_input) != 3:
                     while line:
                         parts = line.split('*')
                         if parts[1] == 'T'+str(tenantid):
-                            print "Subnet:"+parts[2]+"   VM Name:"+parts[3]+"   VM IP:"+parts[4]+"   VM MAC:"+parts[5]
+                            print "Subnet:"+parts[2]+"   VM Name:"+parts[4]+"   VM IP:"+parts[5]+"   VM MAC:"+parts[6]
             elif int(tenant_input) == 2:
                 tenantid = raw_input("Enter the tenant ID: ")
                 hypervisors = []
