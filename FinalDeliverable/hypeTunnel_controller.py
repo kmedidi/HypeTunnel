@@ -56,6 +56,7 @@ def infra(hypervisors):
         run_command = "bash $HOME/infra.sh " + hypMatrix[i]['ip'] + " " + remote_ip_list
         child = ssh_command(hypMatrix[i]['uname'],hypMatrix[i]['ip'],hypMatrix[i]['pwd'],run_command)
         child.expect(pexpect.EOF)
+        child.sendline('exit')
         os.system("sudo scp -i ~/.ssh/proj_key ./tenant_infra.sh "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/tenant_infra.sh")
         os.system("sudo scp -i ~/.ssh/proj_key ./add_subnet.sh "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/add_subnet.sh")
         os.system("sudo scp -i ~/.ssh/proj_key ./add_vm.sh "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/add_vm.sh")
@@ -64,6 +65,7 @@ def infra(hypervisors):
             child = ssh_command(hypMatrix[i]['uname'],hypMatrix[i]['ip'],hypMatrix[i]['pwd'],ver_command)
             child.expect(pexpect.EOF)
             output = child.before
+            child.sendline('exit')
             if int(output) <= 0:
                 success = False
         i+=1
@@ -78,6 +80,7 @@ def tenant_infra(tenant, flag, hypervisor, uname, pwd):
     child = ssh_command(uname,hypervisor,pwd,run_command)
     child.expect(pexpect.EOF)
     output = child.before
+    child.sendline('exit')
     if  output.find('True') != -1:
         success = True
     return success
@@ -91,6 +94,7 @@ def tenant_addsubnet(subnet, tenant, tag, hypervisor, uname, pwd):
     child = ssh_command(uname,hypervisor,pwd,run_command)
     child.expect(pexpect.EOF)
     output = child.before
+    child.sendline('exit')
     if output.find('True') != -1:
         success = True
     return success
@@ -103,6 +107,7 @@ def tenant_addvm(vm_name, vm_ip, tag, flag, hypervisor, uname, pwd):
     child = ssh_command(uname, hypervisor, pwd, run_command)
     child.expect(pexpect.EOF)
     output = child.before
+    child.sendline('exit')
     output = output.rstrip()
     vm_mac = output[-17:]
     return vm_mac
@@ -115,6 +120,7 @@ def tenant_delvm(vm_name, tenant, flag, hypervisor, uname, pwd):
     child = ssh_command(uname, hypervisor, pwd, run_command)
     child.expect(pexpect.EOF)
     output = child.before
+    child.sendline('exit')
     success = False
     if output == "True":
         success = True
@@ -128,6 +134,7 @@ def tenant_vm_stats(vm_name, hypervisor, uname, pwd):
     child = ssh_command(uname, hypervisor, pwd, run_command)
     child.expect(pexpect.EOF)
     output = child.before
+    child.sendline('exit')
     return output
 
 #*********************************************************************************************************************************************************
@@ -528,6 +535,7 @@ while int(user_input) != 3:
                             child = ssh_command(hypSource_uname, hypSource, hypSource_pwd, scp_command)
                             child.expect(pexpect.EOF)
                             output = child.before
+                            child.sendline('exit')
                             vm_mac = tenant_addvm(vm_name, vm_ip, str(tag), "true", hypDestination, hypElement['uname'], hypElement['pwd'])
                     if vm_mac:
                         for hypElement in hypMatrix:
