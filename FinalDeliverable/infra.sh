@@ -6,6 +6,13 @@ sudo chmod 777 $HOME/HypeTunnel/conf
 # Create files $HOME/HypeTunnel/conf/flows.txt, $HOME/HypeTunnel/logs/logs.txt
 sudo touch -a $HOME/HypeTunnel/conf/flows.txt
 
+# Load the hypetunnel image from the tar file
+image=$(sudo docker images | grep -cw hypetunnel)
+if ! [[ $image -gt 0 ]]
+then
+  sudo docker load < $HOME/hypetunnel.tar > /dev/null
+fi
+
 # Create central_ovs if absent
 cpresent=$(sudo ovs-vsctl show | grep -cw central_ovs)
 if ! [[ $cpresent -gt 0 ]]
@@ -57,12 +64,12 @@ do
       else
         vxlan_ints=$vxlan_int
       fi
-      sudo ovs-ofctl add-flow tunnel_ovs table=0,in_port=$vxlan_int,actions=output:30
+      sudo ovs-ofctl add-flow tunnel_ovs table=1,in_port=$vxlan_int,actions=output:30
     fi
   fi
   i=$(($i+1))
 done
 if ! [[ $ipresent -gt 0 ]]
 then
-  sudo ovs-ofctl add-flow tunnel_ovs table=0,in_port=30,actions=output:$vxlan_ints
+  sudo ovs-ofctl add-flow tunnel_ovs table=1,in_port=30,actions=output:$vxlan_ints
 fi

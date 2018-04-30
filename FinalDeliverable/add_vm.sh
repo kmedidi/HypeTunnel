@@ -26,10 +26,10 @@ then
       rm $HOME/$1_image.tar
     fi
   else
-    sudo docker run -itd --name $1 ubuntu > /dev/null
-    sudo docker exec $1 apt-get update > /dev/null
-    sudo docker exec $1 apt-get install -y iputils-ping > /dev/null
-    sudo docker exec $1 apt-get install -y iproute2 > /dev/null
+    sudo docker run -itd --name $1 hypetunnel > /dev/null
+    # sudo docker exec $1 apt-get update > /dev/null
+    # sudo docker exec $1 apt-get install -y iputils-ping > /dev/null
+    # sudo docker exec $1 apt-get install -y iproute2 > /dev/null
   fi
   #Create veth pair and attach it to the central_ovs and container
   sudo ip link add $1_0 type veth peer name $1_1

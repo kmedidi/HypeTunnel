@@ -48,6 +48,7 @@ def infra(hypervisors):
     for hypervisor in hypervisors:
         # Send the shell script to the remote hypervisor
         os.system("sudo scp ./infra.sh "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/infra.sh")
+        os.system("sudo scp ./hypetunnel.tar "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/hypetunnel.tar")
         remote_ip_list = ""
         for hyp in hypervisors:
             if hyp != hypervisor:
