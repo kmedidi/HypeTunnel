@@ -18,13 +18,20 @@ then
   if [[ $MOVE == "true" ]]
   then
     cont=$(echo "$1" | tr '[:upper:]' '[:lower:]')
-    sudo docker load < $HOME/${cont}_image.tar > /dev/null
-    sudo docker run -itd --name $1 ${cont}_image > /dev/null
-    state=$(sudo docker ps -a | grep -c "\<$1\>")
-    if [[ state -eq 1 ]]
+    img_file="$HOME/${cont}_image.tar"
+    if [ -f $img_file ]
     then
-      ### Container moved successfully ###
-      rm $HOME/${cont}_image.tar
+      sudo docker load < $HOME/${cont}_image.tar > /dev/null
+      sudo docker run -itd --name $1 ${cont}_image > /dev/null
+      state=$(sudo docker ps -a | grep -c "\<$1\>")
+      if [[ state -eq 1 ]]
+      then
+        ### Container moved successfully ###
+        rm $HOME/${cont}_image.tar
+      fi
+    else
+        ### No Container image found! ###
+      echo "False"
     fi
   else
     sudo docker run -itd --name $1 hypetunnel > /dev/null
@@ -43,8 +50,8 @@ then
   sudo nsenter -t $pid -n ip route del default
   sudo nsenter -t $pid -n ip route add default via $GW
 fi
-IP_ADD=$(sudo docker exec $1 ip addr)
-
+## Logic to fetch container MAC ##
+#IP_ADD=$(sudo docker exec $1 ip addr)
 #sudo docker inspect --format='{{.NetworkSettings.MacAddress}}' $1
 #sudo docker attach $1
 mac=$(sudo docker exec $1 cat /sys/class/net/$1_1/address)
