@@ -31,7 +31,7 @@ then
   sudo ip link set tunn0 up
   sudo ip link set tunn1 up
   sudo ovs-vsctl add-port central_ovs tunn0 -- set Interface tunn0 ofport=1
-  sudo ovs-vsctl add-port tunnel_ovs tunn1 -- set Interface tunn1 ofport=10
+  sudo ovs-vsctl add-port tunnel_ovs tunn1 -- set Interface tunn1 ofport=30
 fi
 
 # Getting local ip
