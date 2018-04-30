@@ -47,8 +47,12 @@ def infra(hypervisors):
 
     for hypervisor in hypervisors:
         # Send the shell script to the remote hypervisor
+<<<<<<< HEAD
         os.system("sudo scp ./infra.sh "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/infra.sh")
         os.system("sudo scp ./hypetunnel.tar "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/hypetunnel.tar")
+=======
+        os.system("sudo scp -i ~/.ssh/proj_key ./infra.sh "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/infra.sh")
+>>>>>>> 038da61ff3f2bf6aff9f009b36a41f6e5baed9b1
         remote_ip_list = ""
         for hyp in hypervisors:
             if hyp != hypervisor:
@@ -56,10 +60,10 @@ def infra(hypervisors):
         run_command = "bash $HOME/infra.sh " + hypMatrix[i]['ip'] + " " + remote_ip_list
         child = ssh_command(hypMatrix[i]['uname'],hypMatrix[i]['ip'],hypMatrix[i]['pwd'],run_command)
         child.expect(pexpect.EOF)
-        os.system("sudo scp ./tenant_infra.sh "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/tenant_infra.sh")
-        os.system("sudo scp ./add_subnet.sh "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/add_subnet.sh")
-        os.system("sudo scp ./add_vm.sh "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/add_vm.sh")
-        os.system("sudo scp ./del_vm.sh "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/del_vm.sh")
+        os.system("sudo scp -i ~/.ssh/proj_key ./tenant_infra.sh "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/tenant_infra.sh")
+        os.system("sudo scp -i ~/.ssh/proj_key ./add_subnet.sh "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/add_subnet.sh")
+        os.system("sudo scp -i ~/.ssh/proj_key ./add_vm.sh "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/add_vm.sh")
+        os.system("sudo scp -i ~/.ssh/proj_key ./del_vm.sh "+str(hypervisor.split("*")[1])+"@"+str(hypervisor.split("*")[0])+":$HOME/del_vm.sh")
         for ver_command in ver_commands:
             child = ssh_command(hypMatrix[i]['uname'],hypMatrix[i]['ip'],hypMatrix[i]['pwd'],ver_command)
             child.expect(pexpect.EOF)

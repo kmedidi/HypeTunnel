@@ -18,6 +18,7 @@ cpresent=$(sudo ovs-vsctl show | grep -cw central_ovs)
 if ! [[ $cpresent -gt 0 ]]
 then
   sudo ovs-vsctl add-br central_ovs
+  sudo ip link set central_ovs up
 fi
 
 # Create tunnel_ovs if absent
@@ -25,6 +26,7 @@ tpresent=$(sudo ovs-vsctl show | grep -cw tunnel_ovs)
 if ! [[ $tpresent -gt 0 ]]
 then
   sudo ovs-vsctl add-br tunnel_ovs
+  sudo ip link set tunnel_ovs up
 fi
 
 # Connect tunnel_ovs with central_ovs
@@ -36,7 +38,7 @@ then
   sudo ip link set tunn0 up
   sudo ip link set tunn1 up
   sudo ovs-vsctl add-port central_ovs tunn0 -- set Interface tunn0 ofport=1
-  sudo ovs-vsctl add-port tunnel_ovs tunn1 -- set Interface tunn1 ofport=10
+  sudo ovs-vsctl add-port tunnel_ovs tunn1 -- set Interface tunn1 ofport=30
 fi
 
 # Getting local ip
@@ -44,6 +46,7 @@ my_ip=$1
 
 # Create VXLAN & GRE tunnel interfaces
 i=1
+j=2
 vxlan_ints=""
 for var in "$@"
 do
@@ -54,8 +57,8 @@ do
     then
       vxlan_int_name=$i
       gre_int_name=$i
-      vxlan_int=$(($i+30))
-      gre_int=$(($i+31))
+      vxlan_int=$(($j+30))
+      gre_int=$(($j+31))
       ovs-vsctl add-port tunnel_ovs vxlan_$vxlan_int_name -- set Interface vxlan_$i ofport_request=$vxlan_int type=vxlan options:local_ip=$my_ip options:remote_ip=$var
       ovs-vsctl add-port tunnel_ovs gre_$gre_int_name -- set Interface gre_$i ofport_request=$gre_int type=gre options:remote_ip=$var
       if ! [[ $vxlan_ints -eq "" ]]
@@ -68,6 +71,7 @@ do
     fi
   fi
   i=$(($i+1))
+  j=$(($j+2))
 done
 if ! [[ $ipresent -gt 0 ]]
 then
