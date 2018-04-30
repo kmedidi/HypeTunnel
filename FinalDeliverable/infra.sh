@@ -11,6 +11,7 @@ cpresent=$(sudo ovs-vsctl show | grep -cw central_ovs)
 if ! [[ $cpresent -gt 0 ]]
 then
   sudo ovs-vsctl add-br central_ovs
+  sudo ip link set central_ovs up
 fi
 
 # Create tunnel_ovs if absent
@@ -18,6 +19,7 @@ tpresent=$(sudo ovs-vsctl show | grep -cw tunnel_ovs)
 if ! [[ $tpresent -gt 0 ]]
 then
   sudo ovs-vsctl add-br tunnel_ovs
+  sudo ip link set tunnel_ovs up
 fi
 
 # Connect tunnel_ovs with central_ovs
