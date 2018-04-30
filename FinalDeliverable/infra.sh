@@ -76,6 +76,6 @@ done
 if ! [[ $ipresent -gt 0 ]]
 then
   sudo ovs-ofctl add-flow tunnel_ovs table=1,priority=100,in_port=30,actions=output:$vxlan_ints
-  sudo ovs-vsctl add-flow tunnel_ovs table=1,priority=10,actions=drop
+  sudo ovs-ofctl add-flow tunnel_ovs table=1,priority=10,actions=drop
 
 fi
