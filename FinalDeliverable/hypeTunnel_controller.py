@@ -414,6 +414,7 @@ while int(user_input) != 3:
                         else:
                             write_log("Tenant "+str(tenantid)+" : Subnet created:"+subnet)
                 vms = raw_input("Enter the number of additional VMs:")
+                past_image = raw_input("Do you want to boot this VM(s) from an existing image?(Y/N): ")
                 with open(databasefile, mode = 'rb') as fd:
                     line = fd.readline()
                     vm_name_start = 1
@@ -440,7 +441,11 @@ while int(user_input) != 3:
                     vm_ip = subnet.rsplit('.',1)[0]+'.'+str(vm_ip_start)+'/'+mask
                     vm_name_start+=1
                     vm_ip_start+=1
-                    vm_mac = tenant_addvm(vm_name, vm_ip, str(new_tag), "false", hypMatrix[i]['ip'], hypMatrix[i]['uname'], hypMatrix[i]['pwd'])
+                    if past_image == 'N' or past_image == 'n':
+                        vm_mac = tenant_addvm(vm_name, vm_ip, str(new_tag), "false", hypMatrix[i]['ip'], hypMatrix[i]['uname'], hypMatrix[i]['pwd'])
+                    else:
+                        print "Ensure that this image exists in the $HOME directory of the destination hypervisor: "+hypMatrix[i]['ip']+" by the name:"+vm_name.lower()+"_image.tar"
+                        vm_mac = tenant_addvm(vm_name, vm_ip, str(new_tag), "true", hypMatrix[i]['ip'], hypMatrix[i]['uname'], hypMatrix[i]['pwd'])
                     if vm_mac:
                         database_line = hypMatrix[i]['ip']+"*"+"T"+str(tenantid)+"*"+subnet+"*"+str(new_tag)+"*"+vm_name+"*"+vm_ip+"*"+vm_mac+"\n"
                         write_log("Tenant "+str(tenantid)+" Subnet:"+subnet+" VM created-->VM name:"+vm_name+" VM MAC: "+vm_mac)
