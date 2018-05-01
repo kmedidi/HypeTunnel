@@ -12,6 +12,19 @@ sudo ip link set t$1o_$veth1 up
 sudo ip link set t"$1"o_$veth1 netns T$1_NS
 sudo ovs-vsctl add-port central_ovs ot$1_$veth1 tag=$3
 
+trunks=""
+for vlan in {1..$3}
+do
+  if ! [[ trunks eq "" ]]
+  then
+    trunks=$trunks","$vlan
+  else
+    trunks=$3
+  fi
+done
+sudo ovs-vsctl set port tunn0 trunks=$trunks
+sudo ovs-vsctl set port tunn1 trunks=$trunks
+
 sudo ip link set ot"$1"_$veth1 up
 sudo ip netns exec T$1_NS ip link set t"$1"o_$veth1 up
 sudo ip netns exec T$1_NS ip address add $GW/$PREFIX dev t"$1"o_$veth1
@@ -23,6 +36,6 @@ else
 echo "False"
 fi
 
-sudo ovs-ofctl add-flow tunnel_ovs table=0,priority=100,in_port=30,vlan_vid=$3,actions=set_field:$1->tun_id,resubmit(,1)
-sudo ovs-ofctl add-flow tunnel_ovs table=1,priority=100,in_port=30,arp,nw_dst=$GW,actions=drop
-sudo ovs-ofctl add-flow tunnel_ovs table=1,priority=100,in_port=30,ip,nw_dst=$GW,actions=drop
+# sudo ovs-ofctl add-flow tunnel_ovs table=0,priority=100,in_port=30,vlan_vid=$3,actions=set_field:$1->tun_id,resubmit(,1)
+sudo ovs-ofctl add-flow tunnel_ovs table=0,in_port=30,arp,nw_dst=$GW,actions=drop
+sudo ovs-ofctl add-flow tunnel_ovs table=0,in_port=30,ip,nw_dst=$GW,actions=drop
