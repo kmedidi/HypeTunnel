@@ -15,7 +15,7 @@ sudo ovs-vsctl add-port central_ovs ot$1_$veth1 tag=$3
 trunks=""
 for vlan in `seq 1 $3`
 do
-  if ! [[ trunks eq "" ]]
+  if ! [[ trunks -eq "" ]]
   then
     trunks=$trunks","$vlan
   else
@@ -36,6 +36,6 @@ else
 echo "False"
 fi
 
-# sudo ovs-ofctl add-flow tunnel_ovs table=0,priority=100,in_port=30,vlan_vid=$3,actions=set_field:$1->tun_id,resubmit(,1)
-sudo ovs-ofctl add-flow tunnel_ovs table=0,in_port=30,arp,nw_dst=$GW,actions=drop
-sudo ovs-ofctl add-flow tunnel_ovs table=0,in_port=30,ip,nw_dst=$GW,actions=drop
+sudo ovs-ofctl add-flow tunnel_ovs table=0,in_port=30,vlan_vid=$3,actions=set_field:$1->tun_id,resubmit(,1)
+sudo ovs-ofctl add-flow tunnel_ovs table=1,in_port=30,arp,nw_dst=$GW,actions=drop
+sudo ovs-ofctl add-flow tunnel_ovs table=1,in_port=30,ip,nw_dst=$GW,actions=drop

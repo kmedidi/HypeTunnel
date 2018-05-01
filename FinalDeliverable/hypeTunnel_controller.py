@@ -329,7 +329,7 @@ while int(user_input) != 3:
                                         if vm_mac:
                                             for hypElement in hypMatrix:
                                                 if hypElement['ip'] != hypervisor:
-                                                    run_command = "sudo bash $HOME/man_flows.sh true "+hypervisor+" "+vm_mac+" "+vm_ip
+                                                    run_command = "sudo bash $HOME/man_flows.sh true "+hypervisor+" "+str(tenantid)+" "+vm_mac+" "+vm_ip
                                                     child = ssh_command(hypElement['uname'], hypElement['ip'], hypElement['pwd'], run_command)
                                                     child.expect(pexpect.EOF)
                                                     child.sendline('exit')
@@ -369,7 +369,7 @@ while int(user_input) != 3:
                                         if success:
                                             for hypElement in hypMatrix:
                                                 if hypElement['ip'] != hypervisor:
-                                                    run_command = "sudo bash $HOME/man_flows.sh false "+hypervisor+" "+vm_mac+" "+vm_ip
+                                                    run_command = "sudo bash $HOME/man_flows.sh false "+hypervisor+" "+str(tenant)+" "+vm_mac+" "+vm_ip
                                                     child = ssh_command(hypElement['uname'], hypElement['ip'], hypElement['pwd'], run_command)
                                                     child.expect(pexpect.EOF)
                                                     child.sendline('exit')
@@ -473,7 +473,7 @@ while int(user_input) != 3:
                     if vm_mac:
                         for hypElement in hypMatrix:
                             if hypElement['ip'] != hypervisor:
-                                run_command = "sudo bash $HOME/man_flows.sh true "+hypervisor+" "+vm_mac+" "+vm_ip
+                                run_command = "sudo bash $HOME/man_flows.sh true "+hypervisor+" "+str(tenantid)+" "+vm_mac+" "+vm_ip
                                 child = ssh_command(hypElement['uname'], hypElement['ip'], hypElement['pwd'], run_command)
                                 child.expect(pexpect.EOF)
                                 child.sendline('exit')
@@ -510,7 +510,7 @@ while int(user_input) != 3:
                 if success:
                     for hypElement in hypMatrix:
                         if hypElement['ip'] != hypervisor:
-                            run_command = "sudo bash $HOME/man_flows.sh false "+hypervisor+" "+vm_mac+" "+vm_ip
+                            run_command = "sudo bash $HOME/man_flows.sh false "+hypervisor+" "+str(tenantid)+" "+vm_mac+" "+vm_ip
                             child = ssh_command(hypElement['uname'], hypElement['ip'], hypElement['pwd'], run_command)
                             child.expect(pexpect.EOF)
                             child.sendline('exit')
@@ -571,7 +571,7 @@ while int(user_input) != 3:
                     if vm_mac:
                         for hypElement in hypMatrix:
                             if hypElement['ip'] != hypervisor:
-                                run_command = "sudo bash $HOME/man_flows.sh true "+hypDestination+" "+vm_mac+" "+vm_ip
+                                run_command = "sudo bash $HOME/man_flows.sh true "+hypDestination+" "+str(tenantid)+" "+vm_mac+" "+vm_ip
                                 child = ssh_command(hypElement['uname'], hypElement['ip'], hypElement['pwd'], run_command)
                                 child.expect(pexpect.EOF)
                                 child.sendline('exit')
@@ -582,7 +582,7 @@ while int(user_input) != 3:
                         if success:
                             for hypElement in hypMatrix:
                                 if hypElement['ip'] != hypervisor:
-                                    run_command = "sudo bash $HOME/man_flows.sh false "+hypSource+" "+vm_mac+" "+vm_ip
+                                    run_command = "sudo bash $HOME/man_flows.sh false "+hypSource+" "+str(tenantid)+" "+vm_mac+" "+vm_ip
                                     child = ssh_command(hypElement['uname'], hypElement['ip'], hypElement['pwd'], run_command)
                                     child.expect(pexpect.EOF)
                                     child.sendline('exit')

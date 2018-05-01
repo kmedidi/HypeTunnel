@@ -47,7 +47,7 @@ my_ip=$1
 # Create VXLAN & GRE tunnel interfaces
 i=1
 j=2
-vxlan_ints=""
+# vxlan_ints=""
 for var in "$@"
 do
   if ! [[ $i -lt 2 ]]
@@ -61,13 +61,13 @@ do
       gre_int=$(($j+31))
       sudo ovs-vsctl add-port tunnel_ovs vxlan_$vxlan_int_name -- set Interface vxlan_$i ofport_request=$vxlan_int type=vxlan options:local_ip=$my_ip options:remote_ip=$var
       sudo ovs-vsctl add-port tunnel_ovs gre_$gre_int_name -- set Interface gre_$i ofport_request=$gre_int type=gre options:remote_ip=$var
-      if ! [[ $vxlan_ints -eq "" ]]
-      then
-        vxlan_ints=$vxlan_ints","$vxlan_int
-      else
-        vxlan_ints=$vxlan_int
-      fi
-      sudo ovs-ofctl add-flow tunnel_ovs table=0,in_port=$vxlan_int,actions=output:30
+      # if ! [[ $vxlan_ints -eq "" ]]
+      # then
+      #   vxlan_ints=$vxlan_ints","$vxlan_int
+      # else
+      #   vxlan_ints=$vxlan_int
+      # fi
+      sudo ovs-ofctl add-flow tunnel_ovs table=1,in_port=$vxlan_int,actions=output:30
     fi
   fi
   i=$(($i+1))
@@ -75,7 +75,6 @@ do
 done
 if ! [[ $ipresent -gt 0 ]]
 then
-  sudo ovs-ofctl add-flow tunnel_ovs table=0,in_port=30,actions=output:$vxlan_ints
-  sudo ovs-ofctl add-flow tunnel_ovs table=0,actions=drop
-
+  # sudo ovs-ofctl add-flow tunnel_ovs table=0,in_port=30,actions=output:$vxlan_ints
+  sudo ovs-ofctl add-flow tunnel_ovs table=1,priority=10,actions=drop
 fi
