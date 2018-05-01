@@ -46,7 +46,7 @@ my_ip=$1
 
 # Create VXLAN & GRE tunnel interfaces
 i=1
-j=2
+# j=2
 # vxlan_ints=""
 for var in "$@"
 do
@@ -55,12 +55,11 @@ do
     ipresent=$(sudo ovs-vsctl show | grep -cw $var)
     if ! [[ $ipresent -gt 0 ]]
     then
-      vxlan_int_name=$i
-      gre_int_name=$i
-      vxlan_int=$(($j+30))
-      gre_int=$(($j+31))
-      sudo ovs-vsctl add-port tunnel_ovs vxlan_$vxlan_int_name -- set Interface vxlan_$i ofport_request=$vxlan_int type=vxlan options:local_ip=$my_ip options:remote_ip=$var
-      sudo ovs-vsctl add-port tunnel_ovs gre_$gre_int_name -- set Interface gre_$i ofport_request=$gre_int type=gre options:remote_ip=$var
+      # gre_int_name=$i
+      vxlan_int=$(($i+30))
+      # gre_int=$(($j+31))
+      sudo ovs-vsctl add-port tunnel_ovs vxlan_$i -- set interface vxlan_$i ofport_request=$vxlan_int type=vxlan options:local_ip=$my_ip options:remote_ip=$var options:key=flow
+      # sudo ovs-vsctl add-port tunnel_ovs gre_$gre_int_name -- set Interface gre_$i ofport_request=$gre_int type=gre options:remote_ip=$var
       # if ! [[ $vxlan_ints -eq "" ]]
       # then
       #   vxlan_ints=$vxlan_ints","$vxlan_int
@@ -71,7 +70,7 @@ do
     fi
   fi
   i=$(($i+1))
-  j=$(($j+2))
+  # j=$(($j+2))
 done
 if ! [[ $ipresent -gt 0 ]]
 then
