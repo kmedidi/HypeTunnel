@@ -19,7 +19,7 @@ do
   then
     trunks=$trunks","$vlan
   else
-    trunks=$3
+    trunks=$vlan
   fi
 done
 sudo ovs-vsctl set port tunn0 trunks=$trunks
