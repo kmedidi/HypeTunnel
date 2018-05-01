@@ -27,6 +27,8 @@ if ! [[ $tpresent -gt 0 ]]
 then
   sudo ovs-vsctl add-br tunnel_ovs
   sudo ip link set tunnel_ovs up
+  sudo ovs-ofctl del-flows tunnel_ovs
+  sudo ovs-ofctl add-flow tunnel_ovs table=0,priority=100,actions=resubmit(,1)
 fi
 
 # Connect tunnel_ovs with central_ovs
