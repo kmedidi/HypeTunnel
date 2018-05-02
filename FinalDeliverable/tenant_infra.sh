@@ -26,6 +26,6 @@ echo "False"
 fi
 else
 sudo ip netns del T"$id"_NS
-
+sudo ovs-ofctl del-flows tunnel_ovs "tun_id=$id"
 echo "True"
 fi
