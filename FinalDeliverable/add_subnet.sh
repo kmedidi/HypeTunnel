@@ -53,4 +53,5 @@ for val in `seq 2 $(($Nints+1))`
 do
   vxlanInt=$(sudo ovs-ofctl show tunnel_ovs | grep vxlan_$val | cut -d '(' -f 1 | cut -d ' ' -f 2)
   sudo ovs-ofctl add-flow tunnel_ovs "table=0,in_port=$vxlanInt,tun_id=$1,ip,nw_dst=$GW/$PREFIX,actions=mod_vlan_vid:$3,output:30"
+  sudo ovs-ofctl add-flow tunnel_ovs "table=0,in_port=$vxlanInt,tun_id=$1,arp,nw_dst=$GW/$PREFIX,actions=mod_vlan_vid:$3,output:30"
 done
