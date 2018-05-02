@@ -543,10 +543,12 @@ while int(user_input) != 3:
                     line = fd.readline()
                     while line:
                         parts = line.split('*')
+                        if hypDestination == parts[0]:
+                            if subnet == parts[2]:
+                                tag = parts[3]
                         if vm_name == parts[4]:
                             tenantid = int(filter(str.isdigit, parts[1]))
                             subnet = parts[2]
-                            tag = parts[3]
                             vm_ip = parts[5]
                             hypSource = parts[0]
                             rem_line = line
