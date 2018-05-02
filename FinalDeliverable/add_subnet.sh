@@ -49,8 +49,8 @@ sudo ovs-ofctl add-flow tunnel_ovs "table=1,in_port=30,arp,nw_dst=$GW,actions=dr
 sudo ovs-ofctl add-flow tunnel_ovs "table=1,in_port=30,ip,nw_dst=$GW,actions=drop"
 
 Nints=$(sudo ovs-ofctl show tunnel_ovs | grep -c vxlan)
-for val in `seq 2 $Nints`
+for val in `seq 2 $(($Nints+1))`
 do
-  vxlanInt=$(sudo ovs-ofctl show tunnel_ovs | grep vxlan | cut -d '(' -f 1 | cut -d ' ' -f 2)
+  vxlanInt=$(sudo ovs-ofctl show tunnel_ovs | grep vxlan_$val | cut -d '(' -f 1 | cut -d ' ' -f 2)
   sudo ovs-ofctl add-flow tunnel_ovs "table=0,in_port=$vxlanInt,tun_id=$1,ip,nw_dst=$GW/$PREFIX,actions=mod_vlan_vid:$3,output:30"
 done
