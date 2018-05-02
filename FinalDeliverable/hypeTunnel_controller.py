@@ -277,6 +277,7 @@ while int(user_input) != 3:
                                 if new_subnet:
                                     print "Subnet " + subnet + " doesn't exist. Creating it..."
                                     i=0
+                                    tag_list = []
                                     for hypElement in hypMatrix:
                                         with open(databasefile, mode = 'rb') as fd:
                                             line = fd.readline()
@@ -284,9 +285,10 @@ while int(user_input) != 3:
                                             while line:
                                                 parts = line.split('*')
                                                 tag = int(parts[3])
-                                                if tag >= new_tag and parts[0] == hypElement['ip'] and new_tag !> 100*(i+1):
+                                                if tag >= new_tag and parts[0] == hypElement['ip'] and new_tag <= 100*(i+1):
                                                     new_tag = tag+1
                                                 line = fd.readline()
+                                        tag_list.append(new_tag)
                                         success = tenant_addsubnet(subnet, str(tenantid), str(new_tag), hypElement['ip'], hypElement['uname'], hypElement['pwd'])
                                         if success == False:
                                             break
@@ -327,7 +329,7 @@ while int(user_input) != 3:
                                         vm_name_start+=1
                                         vm_ip_start+=1
                                         hypervisor = hypMatrix[i]['ip']
-                                        vm_mac = tenant_addvm(vm_name, vm_ip, str(new_tag), "false", hypervisor, hypMatrix[i]['uname'], hypMatrix[i]['pwd'])
+                                        vm_mac = tenant_addvm(vm_name, vm_ip, str(tag_list[i]), "false", hypervisor, hypMatrix[i]['uname'], hypMatrix[i]['pwd'])
                                         if vm_mac:
                                             for hypElement in hypMatrix:
                                                 if hypElement['ip'] != hypervisor:
@@ -336,7 +338,7 @@ while int(user_input) != 3:
                                                     child.expect(pexpect.EOF)
                                                     child.sendline('exit')
 
-                                            database_line = hypMatrix[i]['ip']+"*"+"T"+str(tenantid)+"*"+subnet+"*"+str(new_tag)+"*"+vm_name+"*"+vm_ip+"*"+vm_mac+"\n"
+                                            database_line = hypMatrix[i]['ip']+"*"+"T"+str(tenantid)+"*"+subnet+"*"+str(tag_list[i])+"*"+vm_name+"*"+vm_ip+"*"+vm_mac+"\n"
                                             with open(databasefile, mode='a+') as fd:
                                                 fd.write(database_line)
                                             write_log("Tenant "+str(tenantid)+" Subnet:"+subnet+" VM created-->VM name:"+vm_name+" VM MAC: "+vm_mac)
@@ -420,6 +422,7 @@ while int(user_input) != 3:
                 if new_subnet:
                     print "Subnet " + subnet + " doesn't exist. Creating it..."
                     i=0
+                    tag_list = []
                     for hypElement in hypMatrix:
                         with open(databasefile, mode = 'rb') as fd:
                             line = fd.readline()
@@ -430,6 +433,7 @@ while int(user_input) != 3:
                                 if tag >= new_tag and parts[0] == hypElement['ip'] and new_tag !> 100*(i+1):
                                     new_tag = tag+1
                                 line = fd.readline()
+                            tag_list.append(new_tag)
                         success = tenant_addsubnet(subnet, str(tenantid), str(new_tag), hypElement['ip'], hypElement['uname'], hypElement['pwd'])
                         if success == False:
                             break
@@ -470,10 +474,10 @@ while int(user_input) != 3:
                     vm_ip_start+=1
                     hypervisor = hypMatrix[i]['ip']
                     if past_image == 'N' or past_image == 'n':
-                        vm_mac = tenant_addvm(vm_name, vm_ip, str(new_tag), "false", hypervisor, hypMatrix[i]['uname'], hypMatrix[i]['pwd'])
+                        vm_mac = tenant_addvm(vm_name, vm_ip, str(tag_list[i]), "false", hypervisor, hypMatrix[i]['uname'], hypMatrix[i]['pwd'])
                     else:
                         print "Ensure that this image exists in the $HOME directory of the destination hypervisor: "+hypMatrix[i]['ip']+" by the name:"+vm_name.lower()+"_image.tar"
-                        vm_mac = tenant_addvm(vm_name, vm_ip, str(new_tag), "true", hypervisor, hypMatrix[i]['uname'], hypMatrix[i]['pwd'])
+                        vm_mac = tenant_addvm(vm_name, vm_ip, str(tag_list[i]), "true", hypervisor, hypMatrix[i]['uname'], hypMatrix[i]['pwd'])
                     if vm_mac:
                         for hypElement in hypMatrix:
                             if hypElement['ip'] != hypervisor:
@@ -482,7 +486,7 @@ while int(user_input) != 3:
                                 child.expect(pexpect.EOF)
                                 child.sendline('exit')
 
-                        database_line = hypMatrix[i]['ip']+"*"+"T"+str(tenantid)+"*"+subnet+"*"+str(new_tag)+"*"+vm_name+"*"+vm_ip+"*"+vm_mac+"\n"
+                        database_line = hypMatrix[i]['ip']+"*"+"T"+str(tenantid)+"*"+subnet+"*"+str(tag_list[i])+"*"+vm_name+"*"+vm_ip+"*"+vm_mac+"\n"
                         write_log("Tenant "+str(tenantid)+" Subnet:"+subnet+" VM created-->VM name:"+vm_name+" VM MAC: "+vm_mac)
                         with open(databasefile, mode='a+') as fd:
                             fd.write(database_line)
