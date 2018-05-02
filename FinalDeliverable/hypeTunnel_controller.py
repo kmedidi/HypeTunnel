@@ -110,6 +110,7 @@ def tenant_addvm(vm_name, vm_ip, tag, flag, hypervisor, uname, pwd):
     output = child.before
     child.sendline('exit')
     output = output.rstrip()
+    print "addvm() python:"+output
     vm_mac = output[-17:]
     return vm_mac
 
@@ -121,9 +122,10 @@ def tenant_delvm(vm_name, tenant, flag, hypervisor, uname, pwd):
     child = ssh_command(uname, hypervisor, pwd, run_command)
     child.expect(pexpect.EOF)
     output = child.before
+    print "delvm() python:"+output
     child.sendline('exit')
     success = False
-    if output == "True":
+    if output.find("True") != -1:
         success = True
     return success
 
@@ -383,8 +385,8 @@ while int(user_input) != 3:
                                 line = fd.readline()
                         new_contents = []
                         with open(databasefile) as fd:
-                        	contents = fd.readlines()
-                        	for content in contents:
+                                contents = fd.readlines()
+                                for content in contents:
                                     for rem_line in rem_lines:
                                         if rem_line != content.strip():
                                             print "rem_line:"+rem_line
@@ -524,8 +526,8 @@ while int(user_input) != 3:
                             child.sendline('exit')
                     new_contents = []
                     with open(databasefile) as fd:
-                    	contents = fd.readlines()
-                    	for content in contents:
+                        contents = fd.readlines()
+                        for content in contents:
                                 for rem_line in rem_lines:
                                     if rem_line != content.strip():
                                         print "rem_line:"+rem_line
@@ -543,15 +545,20 @@ while int(user_input) != 3:
                     line = fd.readline()
                     while line:
                         parts = line.split('*')
-                        if hypDestination == parts[0]:
-                            if subnet == parts[2]:
-                                tag = parts[3]
                         if vm_name == parts[4]:
                             tenantid = int(filter(str.isdigit, parts[1]))
                             subnet = parts[2]
                             vm_ip = parts[5]
                             hypSource = parts[0]
                             rem_line = line
+                        line = fd.readline()
+                with open(databasefile, mode = 'rb') as fd:
+                    line = fd.readline()
+                    while line:
+                        parts = line.split('*')
+                        if hypDestination == parts[0]:
+                            if subnet == parts[2]:
+                                tag = parts[3]
                         line = fd.readline()
                 hypervisors = []
                 with open(hyplistfile, mode = 'rb') as f:
@@ -568,11 +575,11 @@ while int(user_input) != 3:
                     write_log("Tenant: "+str(tenantid)+" VM:"+vm_name+" saved")
                     print "VM successfully saved"
 
-                    vm_ip = subnet.rsplit('.',1)[0]+'.'+str(vm_ip_start)+'/'+mask
+                    #vm_ip = subnet.rsplit('.',1)[0]+'.'+str(vm_ip_start)+'/'+mask
                     for hypElement in hypMatrix:
                         if hypElement['ip'] == hypDestination:
                             hypDestination_uname = hypElement['uname']
-                            scp_command = "scp -i $HOME/.ssh/proj_key $HOME/"+vm_name+"_image.tar "+hypDestination_uname+"@"+hypDestination+":$HOME/"+vm_name+"_image.tar"
+                            scp_command = "scp -i $HOME/.ssh/proj_key $HOME/"+vm_name.lower()+"_image.tar "+hypDestination_uname+"@"+hypDestination+":$HOME/"+vm_name.lower()+"_image.tar"
                             child = ssh_command(hypSource_uname, hypSource, hypSource_pwd, scp_command)
                             child.expect(pexpect.EOF)
                             output = child.before
@@ -580,7 +587,7 @@ while int(user_input) != 3:
                             vm_mac = tenant_addvm(vm_name, vm_ip, str(tag), "true", hypDestination, hypElement['uname'], hypElement['pwd'])
                     if vm_mac:
                         for hypElement in hypMatrix:
-                            if hypElement['ip'] != hypervisor:
+                            if hypElement['ip'] != hypDestination:
                                 run_command = "sudo bash $HOME/man_flows.sh true "+hypDestination+" "+str(tenantid)+" "+vm_mac+" "+vm_ip
                                 child = ssh_command(hypElement['uname'], hypElement['ip'], hypElement['pwd'], run_command)
                                 child.expect(pexpect.EOF)
@@ -591,22 +598,20 @@ while int(user_input) != 3:
                                 success = tenant_delvm(vm_name, str(tenantid), "false", hypSource, hypElement['uname'], hypElement['pwd'])
                         if success:
                             for hypElement in hypMatrix:
-                                if hypElement['ip'] != hypervisor:
+                                if hypElement['ip'] != hypSource:
                                     run_command = "sudo bash $HOME/man_flows.sh false "+hypSource+" "+str(tenantid)+" "+vm_mac+" "+vm_ip
                                     child = ssh_command(hypElement['uname'], hypElement['ip'], hypElement['pwd'], run_command)
                                     child.expect(pexpect.EOF)
                                     child.sendline('exit')
                             new_contents = []
                             with open(databasefile) as fd:
-                            	contents = fd.readlines()
-                            	for content in contents:
+                                contents = fd.readlines()
+                                for content in contents:
                                     if rem_line != content.strip():
-                                        print "rem_line:"+rem_line
-                                        print "rem_line"+content
                                         new_contents.append(content)
                             with open(databasefile, mode = 'w') as fd:
                                 fd.writelines(new_contents)
-                            database_line = hypMatrix[i]['ip']+"*"+"T"+str(tenantid)+"*"+subnet+"*"+str(tag)+"*"+vm_name+"*"+vm_ip+"*"+vm_mac+"\n"
+                            database_line = hypDestination+"*"+"T"+str(tenantid)+"*"+subnet+"*"+str(tag)+"*"+vm_name+"*"+vm_ip+"*"+vm_mac+"\n"
                             with open(databasefile, mode='a+') as fd:
                                 fd.write(database_line)
                             write_log("Tenant "+str(tenantid)+" Subnet:"+subnet+" VM moved-->VM name:"+vm_name+" VM MAC: "+vm_mac)
