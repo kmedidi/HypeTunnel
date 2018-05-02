@@ -13,13 +13,21 @@ sudo ip link set t"$1"o_$veth1 netns T$1_NS
 sudo ovs-vsctl add-port central_ovs ot$1_$veth1 tag=$3
 
 trunks=""
-for vlan in `seq 1 $3`
+for i in `seq 0 100 4000`
 do
-  if ! [[ trunks -eq "" ]]
+  range=$(($3-$i))
+  if [[ $range -le 100 ]]
   then
-    trunks=$trunks","$vlan
-  else
-    trunks=$vlan
+    trunkStart=$(($i+1))
+    for vlan in `seq $trunkStart $3`
+    do
+      if ! [[ trunks -eq "" ]]
+      then
+        trunks=$trunks","$vlan
+      else
+        trunks=$vlan
+      fi
+    done
   fi
 done
 sudo ovs-vsctl set port tunn0 trunks=$trunks

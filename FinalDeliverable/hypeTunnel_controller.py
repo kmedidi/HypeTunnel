@@ -430,7 +430,7 @@ while int(user_input) != 3:
                             while line:
                                 parts = line.split('*')
                                 tag = int(parts[3])
-                                if tag >= new_tag and parts[0] == hypElement['ip'] and new_tag !> 100*(i+1):
+                                if tag >= new_tag and parts[0] == hypElement['ip'] and new_tag <= 100*(i+1):
                                     new_tag = tag+1
                                 line = fd.readline()
                             tag_list.append(new_tag)
