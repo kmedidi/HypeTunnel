@@ -275,20 +275,22 @@ while int(user_input) != 3:
                                                 new_subnet = False
                                         line = fd.readline()
                                 if new_subnet:
-                                    with open(databasefile, mode = 'rb') as fd:
-                                        line = fd.readline()
-                                        new_tag = 1
-                                        while line:
-                                            parts = line.split('*')
-                                            tag = int(parts[3])
-                                            if tag >= new_tag:
-                                                new_tag = tag+1
-                                            line = fd.readline()
                                     print "Subnet " + subnet + " doesn't exist. Creating it..."
+                                    i=0
                                     for hypElement in hypMatrix:
+                                        with open(databasefile, mode = 'rb') as fd:
+                                            line = fd.readline()
+                                            new_tag = (100*i)+1
+                                            while line:
+                                                parts = line.split('*')
+                                                tag = int(parts[3])
+                                                if tag >= new_tag and parts[0] == hypElement['ip'] and new_tag !> 100*(i+1):
+                                                    new_tag = tag+1
+                                                line = fd.readline()
                                         success = tenant_addsubnet(subnet, str(tenantid), str(new_tag), hypElement['ip'], hypElement['uname'], hypElement['pwd'])
                                         if success == False:
                                             break
+                                        i+=1
                                     if not(success):
                                         print "Tenant T"+str(tenantid)+" : Subnet creation FAILED:"+subnet
                                         write_log("Tenant "+str(tenantid)+" : Subnet creation FAILED:"+subnet)
@@ -416,26 +418,28 @@ while int(user_input) != 3:
                                 new_subnet = False
                         line = fd.readline()
                 if new_subnet:
-                    with open(databasefile, mode = 'rb') as fd:
-                        line = fd.readline()
-                        new_tag = 1
-                        while line:
-                            parts = line.split('*')
-                            tag = int(parts[3])
-                            if tag >= new_tag:
-                                new_tag = tag+1
-                            line = fd.readline()
                     print "Subnet " + subnet + " doesn't exist. Creating it..."
+                    i=0
                     for hypElement in hypMatrix:
+                        with open(databasefile, mode = 'rb') as fd:
+                            line = fd.readline()
+                            new_tag = (100*i)+1
+                            while line:
+                                parts = line.split('*')
+                                tag = int(parts[3])
+                                if tag >= new_tag and parts[0] == hypElement['ip'] and new_tag !> 100*(i+1):
+                                    new_tag = tag+1
+                                line = fd.readline()
                         success = tenant_addsubnet(subnet, str(tenantid), str(new_tag), hypElement['ip'], hypElement['uname'], hypElement['pwd'])
                         if success == False:
                             break
-                        if not(success):
-                            print "Tenant T"+str(tenantid)+" : Subnet creation FAILED:"+subnet
-                            write_log("Tenant T"+str(tenantid)+" : Subnet creation FAILED:"+subnet)
-                            continue
-                        else:
-                            write_log("Tenant "+str(tenantid)+" : Subnet created:"+subnet)
+                        i+=1
+                    if not(success):
+                        print "Tenant T"+str(tenantid)+" : Subnet creation FAILED:"+subnet
+                        write_log("Tenant T"+str(tenantid)+" : Subnet creation FAILED:"+subnet)
+                        continue
+                    else:
+                        write_log("Tenant "+str(tenantid)+" : Subnet created:"+subnet)
                 vms = raw_input("Enter the number of additional VMs:")
                 past_image = raw_input("Do you want to boot this VM(s) from an existing image?(Y/N): ")
                 with open(databasefile, mode = 'rb') as fd:

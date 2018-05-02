@@ -21,10 +21,11 @@ flag=$(sudo ip netns exec T"$id"_NS ip addr | grep -c 10.0."$id".1/24)
 if [ $flag -eq 1 ]
 then
 echo "True"
-else 
+else
 echo "False"
 fi
 else
 sudo ip netns del T"$id"_NS
+
 echo "True"
 fi

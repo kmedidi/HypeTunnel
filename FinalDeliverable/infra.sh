@@ -28,7 +28,7 @@ then
   sudo ovs-vsctl add-br tunnel_ovs
   sudo ip link set tunnel_ovs up
   sudo ovs-ofctl del-flows tunnel_ovs
-  sudo ovs-ofctl add-flow tunnel_ovs table=0,priority=100,actions=resubmit(,1)
+  sudo ovs-ofctl add-flow tunnel_ovs "table=0,priority=100,actions=resubmit(,1)"
 fi
 
 # Connect tunnel_ovs with central_ovs
@@ -68,7 +68,7 @@ do
       # else
       #   vxlan_ints=$vxlan_int
       # fi
-      sudo ovs-ofctl add-flow tunnel_ovs table=1,in_port=$vxlan_int,actions=output:30
+      # sudo ovs-ofctl add-flow tunnel_ovs table=1,in_port=$vxlan_int,actions=output:30
     fi
   fi
   i=$(($i+1))
