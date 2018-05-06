@@ -110,7 +110,6 @@ def tenant_addvm(vm_name, vm_ip, tag, flag, hypervisor, uname, pwd):
     output = child.before
     child.sendline('exit')
     output = output.rstrip()
-    print "addvm() python:"+output
     vm_mac = output[-17:]
     return vm_mac
 
@@ -122,7 +121,7 @@ def tenant_delvm(vm_name, tenant, flag, hypervisor, uname, pwd):
     child = ssh_command(uname, hypervisor, pwd, run_command)
     child.expect(pexpect.EOF)
     output = child.before
-    print "delvm() python:"+output
+    print output
     child.sendline('exit')
     success = False
     if output.find("True") != -1:
@@ -529,9 +528,7 @@ while int(user_input) != 3:
                         contents = fd.readlines()
                         for content in contents:
                                 for rem_line in rem_lines:
-                                    if rem_line != content.strip():
-                                        print "rem_line:"+rem_line
-                                        print "rem_line"+content
+                                    if rem_line.strip() != content.strip():
                                         new_contents.append(content)
 
                     with open(databasefile, mode = 'w') as fd:
@@ -571,6 +568,7 @@ while int(user_input) != 3:
                         hypSource_uname = hypElement['uname']
                         hypSource_pwd = hypElement['pwd']
                         success = tenant_delvm(vm_name, str(tenantid), "true", hypSource, hypElement['uname'], hypElement['pwd'])
+                print "Success of delvm:"+str(success)
                 if success:
                     write_log("Tenant: "+str(tenantid)+" VM:"+vm_name+" saved")
                     print "VM successfully saved"
@@ -587,27 +585,38 @@ while int(user_input) != 3:
                             vm_mac = tenant_addvm(vm_name, vm_ip, str(tag), "true", hypDestination, hypElement['uname'], hypElement['pwd'])
                     if vm_mac:
                         for hypElement in hypMatrix:
+                            if hypElement['ip'] != hypSource:
+                                run_command = "sudo bash $HOME/man_flows.sh false "+hypSource+" "+str(tenantid)+" "+vm_mac+" "+vm_ip
+                                child = ssh_command(hypElement['uname'], hypElement['ip'], hypElement['pwd'], run_command)
+                                child.expect(pexpect.EOF)
+                                output = child.before
+                                child.sendline('exit')
+                                write_log("Flows being deleted--> vm_mac:"+vm_mac+" vm_ip:"+vm_ip+" inthe hypervisor:"+hypElement['ip'])
+                        for hypElement in hypMatrix:
                             if hypElement['ip'] != hypDestination:
                                 run_command = "sudo bash $HOME/man_flows.sh true "+hypDestination+" "+str(tenantid)+" "+vm_mac+" "+vm_ip
                                 child = ssh_command(hypElement['uname'], hypElement['ip'], hypElement['pwd'], run_command)
                                 child.expect(pexpect.EOF)
+                                output = child.before
                                 child.sendline('exit')
-
+                                write_log("Flows being added--> vm_mac:"+vm_mac+" vm_ip:"+vm_ip+" inthe hypervisor:"+hypElement['ip'])
                         for hypElement in hypMatrix:
                             if hypElement['ip'] == hypSource:
                                 success = tenant_delvm(vm_name, str(tenantid), "false", hypSource, hypElement['uname'], hypElement['pwd'])
                         if success:
-                            for hypElement in hypMatrix:
-                                if hypElement['ip'] != hypSource:
-                                    run_command = "sudo bash $HOME/man_flows.sh false "+hypSource+" "+str(tenantid)+" "+vm_mac+" "+vm_ip
-                                    child = ssh_command(hypElement['uname'], hypElement['ip'], hypElement['pwd'], run_command)
-                                    child.expect(pexpect.EOF)
-                                    child.sendline('exit')
+                           # for hypElement in hypMatrix:
+                               # if hypElement['ip'] != hypSource:
+                                   # run_command = "sudo bash $HOME/man_flows.sh false "+hypSource+" "+str(tenantid)+" "+vm_mac+" "+vm_ip
+                                   # child = ssh_command(hypElement['uname'], hypElement['ip'], hypElement['pwd'], run_command)
+                                   # child.expect(pexpect.EOF)
+                                   # output = child.before
+                                   # print "Man Flows after deletion:"+output
+                                   # child.sendline('exit')
                             new_contents = []
                             with open(databasefile) as fd:
                                 contents = fd.readlines()
                                 for content in contents:
-                                    if rem_line != content.strip():
+                                    if rem_line.strip() != content.strip():
                                         new_contents.append(content)
                             with open(databasefile, mode = 'w') as fd:
                                 fd.writelines(new_contents)
