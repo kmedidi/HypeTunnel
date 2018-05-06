@@ -9,8 +9,9 @@ ip_ad=$(echo $5 | cut -d '/' -f 1)
 sudo ip netns exec T$3_NS arp -s $ip_ad $4
 elif [[ $1 == "false" ]]
 then
-sudo ovs-ofctl del-flows tunnel_ovs "tun_id=$3,dl_dst=$4"
-sudo ovs-ofctl del-flows tunnel_ovs "tun_id=$3,nw_dst=$5"
 ip_ad=$(echo $5 | cut -d '/' -f 1)
+sudo ovs-ofctl del-flows tunnel_ovs "tun_id=$3,dl_dst=$4"
+sudo ovs-ofctl del-flows tunnel_ovs "tun_id=$3,ip,nw_dst=$ip_ad"
+sudo ovs-ofctl del-flows tunnel_ovs "tun_id=$3,arp,nw_dst=$ip_ad"
 sudo ip netns exec T$3_NS arp -d $ip_ad
 fi
