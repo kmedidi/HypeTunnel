@@ -131,7 +131,7 @@ def tenant_delvm(vm_name, tenant, flag, hypervisor, uname, pwd):
 #*********************************************************************************************************************************************************
 
 def tenant_vm_stats(vm_name, hypervisor, uname, pwd):
-    '''Function that calls del_vm.sh to delete VMs of a specific vm_name for a tenant on a hypervisor'''
+    '''Function that gets the container stats of a specific VM'''
     run_command = "sudo docker stats --no-stream=true "+vm_name
     child = ssh_command(uname, hypervisor, pwd, run_command)
     child.expect(pexpect.EOF)
