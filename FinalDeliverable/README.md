@@ -10,7 +10,7 @@ As a consequence, the mobility of tenant infrastructures (VMs or containers) is 
 
 The following diagram shows the per-physical-pod infrastructure that is created through administrative actions. 
 
-
+![](images/physical_pod.png)
 
 The central_ovs and tunnel_ovs are OVS switches, created and connected whenever a new physical pod is registered to the physical infrastructure. The central_ovs behaves like a normal L2 switch based on L2 Forwarding Table on a per-VLAN basis. The tunnel_ovs is a flow-based switch responsible for tunnel-header encapsulation, decapsulation and forwarding based on the flows configured.
 
